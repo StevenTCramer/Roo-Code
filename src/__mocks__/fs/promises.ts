@@ -162,7 +162,7 @@ const mockFs = {
 	_setInitialMockData: () => {
 		// Set up default MCP settings
 		mockFiles.set(
-			"/mock/settings/path/cline_mcp_settings.json",
+			"/mock/settings/path/mcp_settings.json",
 			JSON.stringify({
 				mcpServers: {
 					"test-server": {
