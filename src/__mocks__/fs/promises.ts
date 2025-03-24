@@ -152,6 +152,22 @@ const mockFs = {
 		throw error
 	}),
 
+	rename: jest.fn().mockImplementation(async (oldPath: string, newPath: string) => {
+		// Check if the old file exists
+		if (mockFiles.has(oldPath)) {
+			// Copy content to new path
+			const content = mockFiles.get(oldPath)
+			mockFiles.set(newPath, content)
+			// Delete old file
+			mockFiles.delete(oldPath)
+			return Promise.resolve()
+		}
+		// If old file doesn't exist, throw an error
+		const error = new Error(`ENOENT: no such file or directory, rename '${oldPath}'`)
+		;(error as any).code = "ENOENT"
+		throw error
+	}),
+
 	constants: jest.requireActual("fs").constants,
 
 	// Expose mock data for test assertions
