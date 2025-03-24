@@ -2,7 +2,6 @@ import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as path from "path"
 import * as fs from "fs/promises"
-import * as fsSync from "fs"
 
 // Load environment variables from .env file
 try {
