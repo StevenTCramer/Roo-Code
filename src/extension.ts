@@ -38,8 +38,6 @@ import { formatLanguage } from "./shared/language"
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
 
-// migrateSettings function moved to src/utils/migrateSettings.ts
-
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
 export async function activate(context: vscode.ExtensionContext) {
