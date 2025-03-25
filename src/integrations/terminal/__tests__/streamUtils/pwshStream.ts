@@ -13,10 +13,20 @@ export function createPowerShellStream(command: string): CommandStream {
 
 	try {
 		// Execute the PowerShell command directly
-		// Use single quotes for the Command parameter to preserve PowerShell variables
-		// Escape any single quotes in the command
-		const escapedCommand = command.replace(/'/g, "'\\''")
-		const shellCommand = `pwsh -NoProfile -NonInteractive -Command '${escapedCommand}'`
+		let shellCommand: string
+
+		if (process.platform === "linux") {
+			// On Linux, use single quotes to preserve PowerShell variables
+			// Escape any single quotes in the command
+			const escapedCommand = command.replace(/'/g, "'\\''")
+			shellCommand = `pwsh -NoProfile -NonInteractive -Command '${escapedCommand}'`
+		} else {
+			// On Windows/macOS, use double quotes and escape inner double quotes
+			// This is the original approach that works on Windows
+			shellCommand = `pwsh -NoProfile -NonInteractive -Command "${command.replace(/"/g, '\\"')}"`
+		}
+
+		console.log(`Executing PowerShell command on ${process.platform}: ${shellCommand}`)
 
 		realOutput = execSync(shellCommand, {
 			encoding: "utf8",
