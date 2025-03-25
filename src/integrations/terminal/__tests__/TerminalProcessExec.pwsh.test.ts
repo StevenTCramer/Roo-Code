@@ -286,7 +286,10 @@ describePlatform("TerminalProcess with PowerShell Command Output", () => {
 	it("should handle larger output streams", async () => {
 		// Generate a larger output stream (but not too large for tests)
 		const lines = 10
-		const command = `1..${lines} | ForEach-Object { "Line $_" }`
+
+		// Use a more explicit command that works consistently across platforms
+		// Avoid using $_ which seems to be expanded differently on Linux
+		const command = `foreach ($i in 1..${lines}) { Write-Output "Line $i" }`
 
 		// Build expected output
 		const expectedOutput = Array.from({ length: lines }, (_, i) => `Line ${i + 1}`).join("\n") + "\n"
