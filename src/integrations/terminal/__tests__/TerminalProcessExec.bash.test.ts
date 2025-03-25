@@ -254,7 +254,10 @@ async function testTerminalCommand(
 	}
 }
 
-describe("TerminalProcess with Real Command Output", () => {
+// Import the test purposes from the common file
+import { TEST_PURPOSES, LARGE_OUTPUT_PARAMS, TEST_TEXT } from "./TerminalProcessExec.common"
+
+describe("TerminalProcess with Bash Command Output", () => {
 	beforeAll(() => {
 		// Initialize TerminalRegistry event handlers once globally
 		TerminalRegistry.initialize()
@@ -266,35 +269,103 @@ describe("TerminalProcess with Real Command Output", () => {
 		jest.clearAllMocks()
 	})
 
-	it("should execute 'echo a' and return exactly 'a\\n' with execution time", async () => {
+	// Each test uses Bash-specific commands to test the same functionality
+	it(TEST_PURPOSES.BASIC_OUTPUT, async () => {
 		const { executionTimeUs, capturedOutput } = await testTerminalCommand("echo a", "a\n")
+		console.log(`'echo a' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} ms)`)
+		expect(capturedOutput).toBe("a\n")
 	})
 
-	it.skip("should execute 'echo -n a' and return exactly 'a'", async () => {
+	it(TEST_PURPOSES.OUTPUT_WITHOUT_NEWLINE, async () => {
+		// Bash command for output without newline
 		const { executionTimeUs } = await testTerminalCommand("/bin/echo -n a", "a")
-		console.log(
-			`'echo -n a' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} milliseconds)`,
-		)
+		console.log(`'echo -n a' execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it.skip("should execute 'printf \"a\\nb\\n\"' and return 'a\\nb\\n'", async () => {
-		const { executionTimeUs } = await testTerminalCommand('printf "a\\nb\\n"', "a\nb\n")
-		console.log(
-			`'printf "a\\nb\\n"' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} milliseconds)`,
-		)
+	it(TEST_PURPOSES.MULTILINE_OUTPUT, async () => {
+		const expectedOutput = "a\nb\n"
+		// Bash multiline command using printf
+		const { executionTimeUs } = await testTerminalCommand('printf "a\\nb\\n"', expectedOutput)
+		console.log(`Multiline command execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it.skip("should properly handle terminal shell execution events", async () => {
-		// This test is implicitly testing the event handlers since all tests now use them
-		const { executionTimeUs } = await testTerminalCommand("echo test", "test\n")
-		console.log(
-			`'echo test' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} milliseconds)`,
-		)
+	it(TEST_PURPOSES.EXIT_CODE_SUCCESS, async () => {
+		// Success exit code
+		const { exitDetails } = await testTerminalCommand("exit 0", "")
+		expect(exitDetails).toEqual({ exitCode: 0 })
 	})
 
-	const TEST_LINES = 1_000_000
+	it(TEST_PURPOSES.EXIT_CODE_ERROR, async () => {
+		// Error exit code
+		const { exitDetails } = await testTerminalCommand("exit 1", "")
+		expect(exitDetails).toEqual({ exitCode: 1 })
+	})
 
-	it.skip(`should execute 'yes AAA... | head -n ${TEST_LINES}' and verify ${TEST_LINES} lines of 'A's`, async () => {
+	it(TEST_PURPOSES.EXIT_CODE_CUSTOM, async () => {
+		// Custom exit code
+		const { exitDetails } = await testTerminalCommand("exit 2", "")
+		expect(exitDetails).toEqual({ exitCode: 2 })
+	})
+
+	it(TEST_PURPOSES.COMMAND_NOT_FOUND, async () => {
+		// Test a non-existent command
+		const { exitDetails } = await testTerminalCommand("nonexistentcommand", "")
+		expect(exitDetails?.exitCode).toBe(127) // Command not found exit code in bash
+	})
+
+	it(TEST_PURPOSES.CONTROL_SEQUENCES, async () => {
+		// Use ANSI escape sequences directly in bash
+		const { capturedOutput } = await testTerminalCommand(
+			'echo -e "\\033[31mRed Text\\033[0m"',
+			"\x1B[31mRed Text\x1B[0m\n",
+		)
+		expect(capturedOutput).toBe("\x1B[31mRed Text\x1B[0m\n")
+	})
+
+	it(TEST_PURPOSES.LARGE_OUTPUT, async () => {
+		// Generate a larger output stream
+		const lines = LARGE_OUTPUT_PARAMS.LINES
+		const command = `for i in $(seq 1 ${lines}); do echo "${TEST_TEXT.LARGE_PREFIX}$i"; done`
+
+		// Build expected output
+		const expectedOutput =
+			Array.from({ length: lines }, (_, i) => `${TEST_TEXT.LARGE_PREFIX}${i + 1}`).join("\n") + "\n"
+
+		const { executionTimeUs, capturedOutput } = await testTerminalCommand(command, expectedOutput)
+
+		// Verify a sample of the output
+		const outputLines = capturedOutput.split("\n")
+		// Check if we have the expected number of lines
+		expect(outputLines.length - 1).toBe(lines) // -1 for trailing newline
+
+		console.log(`Large output command (${lines} lines) execution time: ${executionTimeUs} microseconds`)
+	})
+
+	it(TEST_PURPOSES.SIGNAL_TERMINATION, async () => {
+		// Run kill in subshell to ensure signal affects the command
+		const { exitDetails } = await testTerminalCommand("bash -c 'kill $$'", "")
+		expect(exitDetails).toEqual({
+			exitCode: 143, // 128 + 15 (SIGTERM)
+			signal: 15,
+			signalName: "SIGTERM",
+			coreDumpPossible: false,
+		})
+	})
+
+	it(TEST_PURPOSES.SIGNAL_SEGV, async () => {
+		// Run kill in subshell to ensure signal affects the command
+		const { exitDetails } = await testTerminalCommand("bash -c 'kill -SIGSEGV $$'", "")
+		expect(exitDetails).toEqual({
+			exitCode: 139, // 128 + 11 (SIGSEGV)
+			signal: 11,
+			signalName: "SIGSEGV",
+			coreDumpPossible: true,
+		})
+	})
+
+	// We can skip this very large test for normal development
+	it.skip(`should execute 'yes AAA... | head -n ${1_000_000}' and verify lines of 'A's`, async () => {
+		const TEST_LINES = 1_000_000
 		const expectedOutput = Array(TEST_LINES).fill("A".repeat(76)).join("\n") + "\n"
 
 		// This command will generate 1M lines with 76 'A's each.
@@ -333,50 +404,5 @@ describe("TerminalProcess with Real Command Output", () => {
 		for (const index of sampleIndices) {
 			expect(lines[index]).toBe("A".repeat(76))
 		}
-	})
-
-	describe.skip("exit code interpretation", () => {
-		it("should handle exit 2", async () => {
-			const { exitDetails } = await testTerminalCommand("exit 2", "")
-			expect(exitDetails).toEqual({ exitCode: 2 })
-		})
-
-		it("should handle normal exit codes", async () => {
-			// Test successful command
-			const { exitDetails } = await testTerminalCommand("true", "")
-			expect(exitDetails).toEqual({ exitCode: 0 })
-
-			// Test failed command
-			const { exitDetails: exitDetails2 } = await testTerminalCommand("false", "")
-			expect(exitDetails2).toEqual({ exitCode: 1 })
-		})
-
-		it("should interpret SIGTERM exit code", async () => {
-			// Run kill in subshell to ensure signal affects the command
-			const { exitDetails } = await testTerminalCommand("bash -c 'kill $$'", "")
-			expect(exitDetails).toEqual({
-				exitCode: 143, // 128 + 15 (SIGTERM)
-				signal: 15,
-				signalName: "SIGTERM",
-				coreDumpPossible: false,
-			})
-		})
-
-		it("should interpret SIGSEGV exit code", async () => {
-			// Run kill in subshell to ensure signal affects the command
-			const { exitDetails } = await testTerminalCommand("bash -c 'kill -SIGSEGV $$'", "")
-			expect(exitDetails).toEqual({
-				exitCode: 139, // 128 + 11 (SIGSEGV)
-				signal: 11,
-				signalName: "SIGSEGV",
-				coreDumpPossible: true,
-			})
-		})
-
-		it("should handle command not found", async () => {
-			// Test a non-existent command
-			const { exitDetails } = await testTerminalCommand("nonexistentcommand", "")
-			expect(exitDetails?.exitCode).toBe(127) // Command not found
-		})
 	})
 })

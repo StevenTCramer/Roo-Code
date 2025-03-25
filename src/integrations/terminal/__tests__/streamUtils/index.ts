@@ -56,21 +56,3 @@ export {
 	createPowerShellMockStream,
 	createChunkedMockStream,
 }
-
-// Export a platform-specific getter for convenience
-export function getDefaultCommandStream() {
-	if (isWindows()) {
-		return createCmdCommandStream
-	} else {
-		return createBashCommandStream
-	}
-}
-
-// Export a platform-specific mock stream getter for convenience
-export function getDefaultMockStream() {
-	if (isWindows()) {
-		return createCmdMockStream
-	} else {
-		return createBashMockStream
-	}
-}

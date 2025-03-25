@@ -214,6 +214,9 @@ async function testCmdCommand(
 	}
 }
 
+// Import the test purposes from the common file
+import { TEST_PURPOSES, LARGE_OUTPUT_PARAMS, TEST_TEXT } from "./TerminalProcessExec.common"
+
 describePlatform("TerminalProcess with CMD Command Output", () => {
 	beforeAll(() => {
 		// Initialize TerminalRegistry event handlers
@@ -228,66 +231,88 @@ describePlatform("TerminalProcess with CMD Command Output", () => {
 		jest.clearAllMocks()
 	})
 
-	it("should execute 'echo a' and return expected output", async () => {
+	// Each test uses CMD-specific commands to test the same functionality
+	it(TEST_PURPOSES.BASIC_OUTPUT, async () => {
 		const { executionTimeUs, capturedOutput } = await testCmdCommand("echo a", "a\r\n")
 		console.log(`'echo a' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} ms)`)
 		expect(capturedOutput).toBe("a\r\n")
 	})
 
-	it("should execute command without newline", async () => {
+	it(TEST_PURPOSES.OUTPUT_WITHOUT_NEWLINE, async () => {
 		// Windows CMD equivalent for echo without newline
 		const { executionTimeUs } = await testCmdCommand("echo | set /p dummy=a", "a")
 		console.log(`'echo | set /p dummy=a' execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it("should handle multiline output", async () => {
+	it(TEST_PURPOSES.MULTILINE_OUTPUT, async () => {
 		const expectedOutput = "a\r\nb\r\n"
 		// Windows multiline command
 		const { executionTimeUs } = await testCmdCommand('cmd /c "echo a&echo b"', expectedOutput)
 		console.log(`Multiline command execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it("should handle exit codes properly", async () => {
+	it(TEST_PURPOSES.EXIT_CODE_SUCCESS, async () => {
 		// Success exit code
-		const { exitDetails: successDetails } = await testCmdCommand("exit /b 0", "")
-		expect(successDetails).toEqual({ exitCode: 0 })
-
-		// Error exit code
-		const { exitDetails: errorDetails } = await testCmdCommand("exit /b 1", "")
-		expect(errorDetails).toEqual({ exitCode: 1 })
+		const { exitDetails } = await testCmdCommand("exit /b 0", "")
+		expect(exitDetails).toEqual({ exitCode: 0 })
 	})
 
-	it("should handle command not found errors", async () => {
+	it(TEST_PURPOSES.EXIT_CODE_ERROR, async () => {
+		// Error exit code
+		const { exitDetails } = await testCmdCommand("exit /b 1", "")
+		expect(exitDetails).toEqual({ exitCode: 1 })
+	})
+
+	it(TEST_PURPOSES.EXIT_CODE_CUSTOM, async () => {
+		// Custom exit code
+		const { exitDetails } = await testCmdCommand("exit /b 2", "")
+		expect(exitDetails).toEqual({ exitCode: 2 })
+	})
+
+	it(TEST_PURPOSES.COMMAND_NOT_FOUND, async () => {
 		const { exitDetails } = await testCmdCommand("nonexistentcommand", "")
 		expect(exitDetails.exitCode).not.toBe(0)
 	})
 
-	it("should handle forced output using mock stream when needed", async () => {
-		// Some tests are better with controlled mocks
-		const { capturedOutput } = await testCmdCommand(
-			"special-command",
-			"special output\r\n",
-			true, // Use mock
-		)
-		expect(capturedOutput).toBe("special output\r\n")
-	})
-
-	it("should simulate terminal control sequences", async () => {
-		// This test uses a mock to simulate complex terminal output that would be hard to generate with real CMD
+	it(TEST_PURPOSES.CONTROL_SEQUENCES, async () => {
+		// This test uses a mock to simulate complex terminal output
 		const controlSequences = "\x1B[31mRed Text\x1B[0m\r\n"
 		const { capturedOutput } = await testCmdCommand("color-output", controlSequences, true)
 		expect(capturedOutput).toBe(controlSequences)
 	})
 
-	it("should handle larger output streams", async () => {
-		// Generate a larger output stream (but not too large for tests)
-		const lines = 10
-		const command = `cmd /c "for /L %i in (1,1,${lines}) do @echo Line %i"`
+	it(TEST_PURPOSES.LARGE_OUTPUT, async () => {
+		// Generate a larger output stream
+		const lines = LARGE_OUTPUT_PARAMS.LINES
+		const command = `cmd /c "for /L %i in (1,1,${lines}) do @echo ${TEST_TEXT.LARGE_PREFIX}%i"`
 
-		// Build expected output
-		const expectedOutput = Array.from({ length: lines }, (_, i) => `Line ${i + 1}`).join("\r\n") + "\r\n"
+		// Build expected output - note that CMD uses \r\n line endings
+		const expectedOutput =
+			Array.from({ length: lines }, (_, i) => `${TEST_TEXT.LARGE_PREFIX}${i + 1}`).join("\r\n") + "\r\n"
 
 		const { executionTimeUs } = await testCmdCommand(command, expectedOutput)
 		console.log(`Large output command (${lines} lines) execution time: ${executionTimeUs} microseconds`)
+	})
+
+	it(TEST_PURPOSES.SIGNAL_TERMINATION, async () => {
+		// Simulate SIGTERM in CMD (Windows doesn't have direct signals)
+		const { exitDetails } = await testCmdCommand("exit /b 143", "")
+		expect(exitDetails).toEqual({
+			exitCode: 143, // 128 + 15 (SIGTERM)
+			signal: 15,
+			signalName: "SIGTERM",
+			coreDumpPossible: false,
+		})
+	})
+
+	it(TEST_PURPOSES.SIGNAL_SEGV, async () => {
+		// Simulate SIGSEGV in CMD
+		const { exitDetails } = await testCmdCommand("exit /b 139", "")
+		expect(exitDetails).toEqual({
+			exitCode: 139, // 128 + 11 (SIGSEGV)
+			signal: 11,
+			signalName: "SIGSEGV",
+			coreDumpPossible: true,
+		})
 	})
 })

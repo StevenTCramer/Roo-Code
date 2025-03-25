@@ -218,6 +218,9 @@ async function testPowerShellCommand(
 	}
 }
 
+// Import the test purposes from the common file
+import { TEST_PURPOSES, LARGE_OUTPUT_PARAMS, TEST_TEXT } from "./TerminalProcessExec.common"
+
 describePlatform("TerminalProcess with PowerShell Command Output", () => {
 	beforeAll(() => {
 		// Initialize TerminalRegistry event handlers
@@ -232,67 +235,66 @@ describePlatform("TerminalProcess with PowerShell Command Output", () => {
 		jest.clearAllMocks()
 	})
 
-	it("should execute 'Write-Output a' and return expected output", async () => {
-		const { executionTimeUs, capturedOutput } = await testPowerShellCommand("Write-Output a", "a\n")
-		console.log(`'Write-Output a' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} ms)`)
+	// Each test uses PowerShell-specific commands to test the same functionality
+	it(TEST_PURPOSES.BASIC_OUTPUT, async () => {
+		const { executionTimeUs, capturedOutput } = await testPowerShellCommand("Write-Output 'a'", "a\n")
+		console.log(`'Write-Output 'a'' execution time: ${executionTimeUs} microseconds (${executionTimeUs / 1000} ms)`)
 		expect(capturedOutput).toBe("a\n")
 	})
 
-	it("should execute command without newline", async () => {
+	it(TEST_PURPOSES.OUTPUT_WITHOUT_NEWLINE, async () => {
 		// PowerShell command for output without newline
-		const { executionTimeUs } = await testPowerShellCommand("Write-Host -NoNewline a", "a")
-		console.log(`'Write-Host -NoNewline a' execution time: ${executionTimeUs} microseconds`)
+		const { executionTimeUs } = await testPowerShellCommand("Write-Host -NoNewline 'a'", "a")
+		console.log(`'Write-Host -NoNewline 'a'' execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it("should handle multiline output", async () => {
+	it(TEST_PURPOSES.MULTILINE_OUTPUT, async () => {
 		const expectedOutput = "a\nb\n"
-		// PowerShell multiline command
+		// PowerShell multiline command using array
 		const { executionTimeUs } = await testPowerShellCommand('Write-Output @("a", "b")', expectedOutput)
 		console.log(`Multiline command execution time: ${executionTimeUs} microseconds`)
 	})
 
-	it("should handle exit codes properly", async () => {
+	it(TEST_PURPOSES.EXIT_CODE_SUCCESS, async () => {
 		// Success exit code
-		const { exitDetails: successDetails } = await testPowerShellCommand("exit 0", "")
-		expect(successDetails).toEqual({ exitCode: 0 })
-
-		// Error exit code
-		const { exitDetails: errorDetails } = await testPowerShellCommand("exit 1", "")
-		expect(errorDetails).toEqual({ exitCode: 1 })
+		const { exitDetails } = await testPowerShellCommand("exit 0", "")
+		expect(exitDetails).toEqual({ exitCode: 0 })
 	})
 
-	it("should handle command not found errors", async () => {
+	it(TEST_PURPOSES.EXIT_CODE_ERROR, async () => {
+		// Error exit code
+		const { exitDetails } = await testPowerShellCommand("exit 1", "")
+		expect(exitDetails).toEqual({ exitCode: 1 })
+	})
+
+	it(TEST_PURPOSES.EXIT_CODE_CUSTOM, async () => {
+		// Custom exit code
+		const { exitDetails } = await testPowerShellCommand("exit 2", "")
+		expect(exitDetails).toEqual({ exitCode: 2 })
+	})
+
+	it(TEST_PURPOSES.COMMAND_NOT_FOUND, async () => {
 		const { exitDetails } = await testPowerShellCommand("nonexistentcommand", "")
 		expect(exitDetails.exitCode).not.toBe(0)
 	})
 
-	it("should handle forced output using mock stream when needed", async () => {
-		// Some tests are better with controlled mocks
-		const { capturedOutput } = await testPowerShellCommand(
-			"special-command",
-			"special output\n",
-			true, // Use mock
-		)
-		expect(capturedOutput).toBe("special output\n")
-	})
-
-	it("should simulate terminal control sequences", async () => {
-		// This test uses a mock to simulate complex terminal output that would be hard to generate with real PowerShell
+	it(TEST_PURPOSES.CONTROL_SEQUENCES, async () => {
+		// This test uses a mock to simulate complex terminal output
 		const controlSequences = "\x1B[31mRed Text\x1B[0m\n"
 		const { capturedOutput } = await testPowerShellCommand("color-output", controlSequences, true)
 		expect(capturedOutput).toBe(controlSequences)
 	})
 
-	it("should handle larger output streams", async () => {
-		// Generate a larger output stream (but not too large for tests)
-		const lines = 10
+	it(TEST_PURPOSES.LARGE_OUTPUT, async () => {
+		// Generate a larger output stream
+		const lines = LARGE_OUTPUT_PARAMS.LINES
 
-		// Use a more explicit command that works consistently across platforms
-		// Avoid using $_ which seems to be expanded differently on Linux
-		const command = `foreach ($i in 1..${lines}) { Write-Output "Line $i" }`
+		// PowerShell-specific command to generate multiple lines
+		const command = `foreach ($i in 1..${lines}) { Write-Output "${TEST_TEXT.LARGE_PREFIX}$i" }`
 
 		// Build expected output
-		const expectedOutput = Array.from({ length: lines }, (_, i) => `Line ${i + 1}`).join("\n") + "\n"
+		const expectedOutput =
+			Array.from({ length: lines }, (_, i) => `${TEST_TEXT.LARGE_PREFIX}${i + 1}`).join("\n") + "\n"
 
 		// Skip the automatic output verification
 		const skipVerification = true
@@ -311,7 +313,7 @@ describePlatform("TerminalProcess with PowerShell Command Output", () => {
 		if (process.platform === "linux") {
 			// On Linux, we'll check if the output contains the expected lines in any format
 			for (let i = 1; i <= lines; i++) {
-				expect(capturedOutput).toContain(`Line ${i}`)
+				expect(capturedOutput).toContain(`${TEST_TEXT.LARGE_PREFIX}${i}`)
 			}
 		} else {
 			// On other platforms, we'll do the exact match
@@ -319,5 +321,27 @@ describePlatform("TerminalProcess with PowerShell Command Output", () => {
 		}
 
 		console.log(`Large output command (${lines} lines) execution time: ${executionTimeUs} microseconds`)
+	})
+
+	it(TEST_PURPOSES.SIGNAL_TERMINATION, async () => {
+		// Simulate SIGTERM in PowerShell (windows doesn't have direct signals)
+		const { exitDetails } = await testPowerShellCommand("[System.Environment]::Exit(143)", "")
+		expect(exitDetails).toEqual({
+			exitCode: 143, // 128 + 15 (SIGTERM)
+			signal: 15,
+			signalName: "SIGTERM",
+			coreDumpPossible: false,
+		})
+	})
+
+	it(TEST_PURPOSES.SIGNAL_SEGV, async () => {
+		// Simulate SIGSEGV in PowerShell
+		const { exitDetails } = await testPowerShellCommand("[System.Environment]::Exit(139)", "")
+		expect(exitDetails).toEqual({
+			exitCode: 139, // 128 + 11 (SIGSEGV)
+			signal: 11,
+			signalName: "SIGSEGV",
+			coreDumpPossible: true,
+		})
 	})
 })
