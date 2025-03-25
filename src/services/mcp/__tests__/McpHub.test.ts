@@ -113,7 +113,7 @@ describe("McpHub", () => {
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
 		})
 
-		it.skip("should remove tool from always allow list when disabling", async () => {
+		it("should remove tool from always allow list when disabling", async () => {
 			const mockConfig = {
 				mcpServers: {
 					"test-server": {
@@ -131,12 +131,19 @@ describe("McpHub", () => {
 			await mcpHub.toggleToolAlwaysAllow("test-server", "existing-tool", false)
 
 			// Verify the config was updated correctly
-			const writeCall = (fs.writeFile as jest.Mock).mock.calls[0]
-			const writtenConfig = JSON.parse(writeCall[1])
+			// Find the write call with the normalized path
+			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
+			const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+
+			// Find the write call with the normalized path
+			const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
+			const callToUse = writeCall || writeCalls[0]
+
+			const writtenConfig = JSON.parse(callToUse[1])
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).not.toContain("existing-tool")
 		})
 
-		it.skip("should initialize alwaysAllow if it does not exist", async () => {
+		it("should initialize alwaysAllow if it does not exist", async () => {
 			const mockConfig = {
 				mcpServers: {
 					"test-server": {
@@ -153,15 +160,22 @@ describe("McpHub", () => {
 			await mcpHub.toggleToolAlwaysAllow("test-server", "new-tool", true)
 
 			// Verify the config was updated with initialized alwaysAllow
-			const writeCall = (fs.writeFile as jest.Mock).mock.calls[0]
-			const writtenConfig = JSON.parse(writeCall[1])
+			// Find the write call with the normalized path
+			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
+			const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+
+			// Find the write call with the normalized path
+			const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
+			const callToUse = writeCall || writeCalls[0]
+
+			const writtenConfig = JSON.parse(callToUse[1])
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toBeDefined()
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
 		})
 	})
 
 	describe("server disabled state", () => {
-		it.skip("should toggle server disabled state", async () => {
+		it("should toggle server disabled state", async () => {
 			const mockConfig = {
 				mcpServers: {
 					"test-server": {
@@ -179,8 +193,15 @@ describe("McpHub", () => {
 			await mcpHub.toggleServerDisabled("test-server", true)
 
 			// Verify the config was updated correctly
-			const writeCall = (fs.writeFile as jest.Mock).mock.calls[0]
-			const writtenConfig = JSON.parse(writeCall[1])
+			// Find the write call with the normalized path
+			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
+			const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+
+			// Find the write call with the normalized path
+			const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
+			const callToUse = writeCall || writeCalls[0]
+
+			const writtenConfig = JSON.parse(callToUse[1])
 			expect(writtenConfig.mcpServers["test-server"].disabled).toBe(true)
 		})
 
@@ -389,8 +410,15 @@ describe("McpHub", () => {
 				await mcpHub.updateServerTimeout("test-server", 120)
 
 				// Verify the config was updated correctly
-				const writeCall = (fs.writeFile as jest.Mock).mock.calls[0]
-				const writtenConfig = JSON.parse(writeCall[1])
+				// Find the write call with the normalized path
+				const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
+				const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+
+				// Find the write call with the normalized path
+				const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
+				const callToUse = writeCall || writeCalls[0]
+
+				const writtenConfig = JSON.parse(callToUse[1])
 				expect(writtenConfig.mcpServers["test-server"].timeout).toBe(120)
 			})
 
