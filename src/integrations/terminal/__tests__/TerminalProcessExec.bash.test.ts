@@ -314,9 +314,9 @@ describe("TerminalProcess with Bash Command Output", () => {
 	})
 
 	it(TEST_PURPOSES.CONTROL_SEQUENCES, async () => {
-		// Use ANSI escape sequences directly in bash
+		// Use printf instead of echo -e for more consistent behavior across platforms
 		const { capturedOutput } = await testTerminalCommand(
-			'echo -e "\\033[31mRed Text\\033[0m"',
+			'printf "\\033[31mRed Text\\033[0m\\n"',
 			"\x1B[31mRed Text\x1B[0m\n",
 		)
 		expect(capturedOutput).toBe("\x1B[31mRed Text\x1B[0m\n")
