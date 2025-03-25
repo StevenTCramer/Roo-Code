@@ -13,18 +13,24 @@ export function createPowerShellStream(command: string): CommandStream {
 
 	try {
 		// Execute the PowerShell command directly
-		// Wrap the command in double quotes to preserve it when passing to pwsh
-		const shellCommand = `pwsh -NoProfile -NonInteractive -Command "${command.replace(/"/g, '\\"')}"`
+		// Use single quotes for the Command parameter to preserve PowerShell variables
+		// Escape any single quotes in the command
+		const escapedCommand = command.replace(/'/g, "'\\''")
+		const shellCommand = `pwsh -NoProfile -NonInteractive -Command '${escapedCommand}'`
 
 		realOutput = execSync(shellCommand, {
 			encoding: "utf8",
 			maxBuffer: 100 * 1024 * 1024,
-			stdio: ["pipe", "pipe", "ignore"], // Redirect stderr to null
+			stdio: ["pipe", "pipe", "pipe"], // Capture stderr for debugging
 		})
 		exitCode = 0 // Command succeeded
 	} catch (error: any) {
 		// Command failed - get output and exit code from error
 		realOutput = error.stdout?.toString() || ""
+		console.error(`PowerShell command failed with status ${error.status || "unknown"}:`, error.message)
+		if (error.stderr) {
+			console.error(`stderr: ${error.stderr.toString()}`)
+		}
 		exitCode = error.status || 1
 	}
 
