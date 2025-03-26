@@ -15,8 +15,14 @@ describe("McpHub", () => {
 	let mcpHub: McpHubType
 	let mockProvider: Partial<ClineProvider>
 
+	// Store original console methods
+	const originalConsoleError = console.error
+
 	beforeEach(() => {
 		jest.clearAllMocks()
+
+		// Mock console.error to suppress error messages during tests
+		console.error = jest.fn()
 
 		const mockUri: Uri = {
 			scheme: "file",
@@ -80,6 +86,11 @@ describe("McpHub", () => {
 		)
 
 		mcpHub = new McpHub(mockProvider as ClineProvider)
+	})
+
+	afterEach(() => {
+		// Restore original console methods
+		console.error = originalConsoleError
 	})
 
 	describe("toggleToolAlwaysAllow", () => {
