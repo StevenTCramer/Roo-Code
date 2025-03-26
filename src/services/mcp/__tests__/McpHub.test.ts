@@ -113,15 +113,19 @@ describe("McpHub", () => {
 			await mcpHub.toggleToolAlwaysAllow("test-server", "new-tool", true)
 
 			// Verify the config was updated correctly
-			// Find the write call with the normalized path
-			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
 			const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+			expect(writeCalls.length).toBeGreaterThan(0)
 
-			// Find the write call with the normalized path
-			const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
-			const callToUse = writeCall || writeCalls[0]
+			// Find the write call
+			const callToUse = writeCalls[writeCalls.length - 1]
+			expect(callToUse).toBeTruthy()
 
+			// The path might be normalized differently on different platforms,
+			// so we'll just check that we have a call with valid content
 			const writtenConfig = JSON.parse(callToUse[1])
+			expect(writtenConfig.mcpServers).toBeDefined()
+			expect(writtenConfig.mcpServers["test-server"]).toBeDefined()
+			expect(Array.isArray(writtenConfig.mcpServers["test-server"].alwaysAllow)).toBe(true)
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
 		})
 
@@ -143,15 +147,19 @@ describe("McpHub", () => {
 			await mcpHub.toggleToolAlwaysAllow("test-server", "existing-tool", false)
 
 			// Verify the config was updated correctly
-			// Find the write call with the normalized path
-			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
 			const writeCalls = (fs.writeFile as jest.Mock).mock.calls
+			expect(writeCalls.length).toBeGreaterThan(0)
 
-			// Find the write call with the normalized path
-			const writeCall = writeCalls.find((call) => call[0] === normalizedSettingsPath)
-			const callToUse = writeCall || writeCalls[0]
+			// Find the write call
+			const callToUse = writeCalls[writeCalls.length - 1]
+			expect(callToUse).toBeTruthy()
 
+			// The path might be normalized differently on different platforms,
+			// so we'll just check that we have a call with valid content
 			const writtenConfig = JSON.parse(callToUse[1])
+			expect(writtenConfig.mcpServers).toBeDefined()
+			expect(writtenConfig.mcpServers["test-server"]).toBeDefined()
+			expect(Array.isArray(writtenConfig.mcpServers["test-server"].alwaysAllow)).toBe(true)
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).not.toContain("existing-tool")
 		})
 
