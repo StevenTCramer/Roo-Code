@@ -46,7 +46,7 @@ import {
 	useOpenRouterModelProviders,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 } from "@/components/ui/hooks/useOpenRouterModelProviders"
-
+import { useOpenRouterKeyInfo } from "@/components/ui/hooks/useOpenRouterKeyInfo"
 import { MODELS_BY_PROVIDER, PROVIDERS, AWS_REGIONS, VERTEX_REGIONS } from "./constants"
 import { VSCodeButtonLink } from "../common/VSCodeButtonLink"
 import { ModelInfoView } from "./ModelInfoView"
@@ -55,6 +55,24 @@ import { TemperatureControl } from "./TemperatureControl"
 import { validateApiConfiguration, validateModelId, validateBedrockArn } from "@/utils/validate"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
+import { R1FormatSetting } from "./R1FormatSetting"
+
+// Component to display OpenRouter API key balance
+const OpenRouterBalanceDisplay = ({ apiKey, baseUrl }: { apiKey: string; baseUrl?: string }) => {
+	const { data: keyInfo } = useOpenRouterKeyInfo(apiKey, baseUrl)
+
+	if (!keyInfo || !keyInfo.limit) {
+		return null
+	}
+
+	const formattedBalance = (keyInfo.limit - keyInfo.usage).toFixed(2)
+
+	return (
+		<VSCodeLink href="https://openrouter.ai/settings/keys" className="text-vscode-foreground hover:underline">
+			${formattedBalance}
+		</VSCodeLink>
+	)
+}
 
 interface ApiOptionsProps {
 	uriScheme: string | undefined
@@ -104,7 +122,6 @@ const ApiOptions = ({
 		!!apiConfiguration?.googleGeminiBaseUrl,
 	)
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
-
 	const noTransform = <T,>(value: T) => value
 
 	const inputEventTransform = <E,>(event: E) => (event as { target: HTMLInputElement })?.target?.value as any
@@ -274,7 +291,15 @@ const ApiOptions = ({
 						onInput={handleInputChange("openRouterApiKey")}
 						placeholder={t("settings:placeholders.apiKey")}
 						className="w-full">
-						<label className="block font-medium mb-1">{t("settings:providers.openRouterApiKey")}</label>
+						<div className="flex justify-between items-center mb-1">
+							<label className="block font-medium">{t("settings:providers.openRouterApiKey")}</label>
+							{apiConfiguration?.openRouterApiKey && (
+								<OpenRouterBalanceDisplay
+									apiKey={apiConfiguration.openRouterApiKey}
+									baseUrl={apiConfiguration.openRouterBaseUrl}
+								/>
+							)}
+						</div>
 					</VSCodeTextField>
 					<div className="text-sm text-vscode-descriptionForeground -mt-2">
 						{t("settings:providers.apiKeyStorageNotice")}
@@ -695,6 +720,10 @@ const ApiOptions = ({
 						modelInfoKey="openAiCustomModelInfo"
 						serviceName="OpenAI"
 						serviceUrl="https://platform.openai.com"
+					/>
+					<R1FormatSetting
+						onChange={handleInputChange("openAiR1FormatEnabled", noTransform)}
+						openAiR1FormatEnabled={apiConfiguration?.openAiR1FormatEnabled ?? false}
 					/>
 					<Checkbox
 						checked={apiConfiguration?.openAiStreamingEnabled ?? true}

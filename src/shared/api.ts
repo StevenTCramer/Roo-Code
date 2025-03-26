@@ -48,6 +48,7 @@ export interface ApiHandlerOptions {
 	vertexRegion?: string
 	openAiBaseUrl?: string
 	openAiApiKey?: string
+	openAiR1FormatEnabled?: boolean
 	openAiModelId?: string
 	openAiCustomModelInfo?: ModelInfo
 	openAiUseAzure?: boolean
@@ -127,6 +128,7 @@ export const API_CONFIG_KEYS: GlobalStateKey[] = [
 	"azureApiVersion",
 	"openRouterUseMiddleOutTransform",
 	"openAiStreamingEnabled",
+	"openAiR1FormatEnabled",
 	// "deepSeekBaseUrl", //  not exist on GlobalStateKey
 	// "includeMaxTokens", // not exist on GlobalStateKey
 	"unboundModelId",
@@ -745,6 +747,14 @@ export const openAiModelInfoSaneDefaults: ModelInfo = {
 export type GeminiModelId = keyof typeof geminiModels
 export const geminiDefaultModelId: GeminiModelId = "gemini-2.0-flash-001"
 export const geminiModels = {
+	"gemini-2.5-pro-exp-03-25": {
+		maxTokens: 65_536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
 	"gemini-2.0-flash-001": {
 		maxTokens: 8192,
 		contextWindow: 1_048_576,
@@ -853,7 +863,7 @@ export const openAiNativeModels = {
 		maxTokens: 100_000,
 		contextWindow: 200_000,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 1.1,
 		outputPrice: 4.4,
 		reasoningEffort: "medium",
@@ -862,7 +872,7 @@ export const openAiNativeModels = {
 		maxTokens: 100_000,
 		contextWindow: 200_000,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 1.1,
 		outputPrice: 4.4,
 		reasoningEffort: "high",
@@ -871,7 +881,7 @@ export const openAiNativeModels = {
 		maxTokens: 100_000,
 		contextWindow: 200_000,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 1.1,
 		outputPrice: 4.4,
 		reasoningEffort: "low",
@@ -880,7 +890,7 @@ export const openAiNativeModels = {
 		maxTokens: 100_000,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 15,
 		outputPrice: 60,
 	},
@@ -888,7 +898,7 @@ export const openAiNativeModels = {
 		maxTokens: 32_768,
 		contextWindow: 128_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 15,
 		outputPrice: 60,
 	},
@@ -896,7 +906,7 @@ export const openAiNativeModels = {
 		maxTokens: 65_536,
 		contextWindow: 128_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 1.1,
 		outputPrice: 4.4,
 	},
@@ -904,7 +914,7 @@ export const openAiNativeModels = {
 		maxTokens: 16_384,
 		contextWindow: 128_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 75,
 		outputPrice: 150,
 	},
@@ -912,7 +922,7 @@ export const openAiNativeModels = {
 		maxTokens: 16_384,
 		contextWindow: 128_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 2.5,
 		outputPrice: 10,
 	},
@@ -920,7 +930,7 @@ export const openAiNativeModels = {
 		maxTokens: 16_384,
 		contextWindow: 128_000,
 		supportsImages: true,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 	},
