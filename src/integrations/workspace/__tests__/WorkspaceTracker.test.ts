@@ -101,7 +101,7 @@ describe("WorkspaceTracker", () => {
 		expect((mockProvider.postMessageToWebview as jest.Mock).mock.calls[0][0].filePaths).toHaveLength(2)
 	})
 
-	it.skip("should handle file creation events", async () => {
+	it("should handle file creation events", async () => {
 		// Get the creation callback and call it
 		const [[callback]] = mockOnDidCreate.mock.calls
 		await callback({ fsPath: "/test/workspace/newfile.ts" })
@@ -133,7 +133,7 @@ describe("WorkspaceTracker", () => {
 		})
 	})
 
-	it.skip("should handle directory paths correctly", async () => {
+	it("should handle directory paths correctly", async () => {
 		// Mock stat to return directory type
 		;(vscode.workspace.fs.stat as jest.Mock).mockResolvedValueOnce({ type: 2 }) // FileType.Directory = 2
 
@@ -150,7 +150,7 @@ describe("WorkspaceTracker", () => {
 		expect(lastCall[0].filePaths).toHaveLength(1)
 	})
 
-	it.skip("should respect file limits", async () => {
+	it("should respect file limits", async () => {
 		// Create array of unique file paths for initial load
 		const files = Array.from({ length: 1001 }, (_, i) => `/test/workspace/file${i}.ts`)
 		;(listFiles as jest.Mock).mockResolvedValue([files, false])
@@ -239,7 +239,7 @@ describe("WorkspaceTracker", () => {
 		jest.runAllTimers()
 	})
 
-	it.skip("should not update file paths if workspace changes during initialization", async () => {
+	it("should not update file paths if workspace changes during initialization", async () => {
 		// Setup initial workspace path
 		;(getWorkspacePath as jest.Mock).mockReturnValue("/test/workspace")
 		workspaceTracker = new WorkspaceTracker(mockProvider)
@@ -272,11 +272,23 @@ describe("WorkspaceTracker", () => {
 		jest.runAllTimers()
 
 		// Should not update file paths because workspace changed during initialization
-		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-			filePaths: ["/test/workspace/file1.ts", "/test/workspace/file2.ts"],
-			openedTabs: [],
-			type: "workspaceUpdated",
-		})
+		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "workspaceUpdated",
+				openedTabs: [],
+			}),
+		)
+
+		// Extract the actual file paths to verify format
+		const actualFilePaths = (mockProvider.postMessageToWebview as jest.Mock).mock.calls[0][0].filePaths
+
+		// Verify file path array length
+		expect(actualFilePaths).toHaveLength(2)
+
+		// Verify file paths contain the expected file names regardless of platform specifics
+		expect(actualFilePaths.every((path: string) => path.includes("file1.ts") || path.includes("file2.ts"))).toBe(
+			true,
+		)
 	})
 
 	it("should clear resetTimer when calling workspaceDidReset multiple times", async () => {
