@@ -15,7 +15,12 @@ let registeredTabChangeCallback: (() => Promise<void>) | null = null
 // Mock workspace path
 jest.mock("../../../utils/path", () => ({
 	getWorkspacePath: jest.fn().mockReturnValue("/test/workspace"),
-	toRelativePath: jest.fn((path, cwd) => path.replace(`${cwd}/`, "")),
+	toRelativePath: jest.fn((path, cwd) => {
+		// Handle both Windows and POSIX paths by using path.relative
+		const relativePath = require("path").relative(cwd, path)
+		// Convert to forward slashes for consistency
+		return relativePath.replace(/\\/g, "/")
+	}),
 }))
 
 // Mock watcher - must be defined after mockDispose but before jest.mock("vscode")
@@ -81,7 +86,7 @@ describe("WorkspaceTracker", () => {
 		expect(registeredTabChangeCallback).not.toBeNull()
 	})
 
-	it.skip("should initialize with workspace files", async () => {
+	it("should initialize with workspace files", async () => {
 		const mockFiles = [["/test/workspace/file1.ts", "/test/workspace/file2.ts"], false]
 		;(listFiles as jest.Mock).mockResolvedValue(mockFiles)
 
