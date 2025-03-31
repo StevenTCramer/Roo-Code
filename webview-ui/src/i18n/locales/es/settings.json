@@ -83,6 +83,7 @@
 	},
 	"providers": {
 		"configProfile": "Perfil de configuración",
+		"providerDocumentation": "Documentación de {{provider}}",
 		"description": "Guarde diferentes configuraciones de API para cambiar rápidamente entre proveedores y ajustes.",
 		"apiProvider": "Proveedor de API",
 		"model": "Modelo",
@@ -276,8 +277,9 @@
 		},
 		"maxReadFile": {
 			"label": "Umbral de auto-truncado de lectura de archivos",
-			"description": "El número predeterminado de líneas para leer de un archivo en un lote. Valores más bajos reducen el uso de contexto/recursos pero pueden requerir más lecturas para archivos grandes.",
-			"lines": "líneas"
+			"description": "Roo lee este número de líneas cuando el modelo omite valores de inicio/fin. Si este número es menor que el total del archivo, Roo genera un índice de números de línea de las definiciones de código. Casos especiales: -1 indica a Roo que lea el archivo completo (sin indexación), y 0 indica que no lea líneas y proporcione solo índices de línea para un contexto mínimo. Valores más bajos minimizan el uso inicial de contexto, permitiendo lecturas posteriores de rangos de líneas precisos. Las solicitudes con inicio/fin explícitos no están limitadas por esta configuración.",
+			"lines": "líneas",
+			"always_full_read": "Siempre leer el archivo completo"
 		}
 	},
 	"terminal": {
@@ -319,7 +321,7 @@
 	},
 	"experimental": {
 		"warning": "⚠️",
-		"DIFF_STRATEGY": {
+		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usar estrategia de diff unificada experimental",
 			"description": "Habilitar la estrategia de diff unificada experimental. Esta estrategia podría reducir el número de reintentos causados por errores del modelo, pero puede causar comportamientos inesperados o ediciones incorrectas. Habilítela solo si comprende los riesgos y está dispuesto a revisar cuidadosamente todos los cambios."
 		},
@@ -381,9 +383,10 @@
 			"label": "Permitir informes anónimos de errores y uso",
 			"description": "Ayude a mejorar Roo Code enviando datos de uso anónimos e informes de errores. Nunca se envía código, prompts o información personal. Consulte nuestra política de privacidad para más detalles."
 		},
-		"reset": {
-			"description": "Restablecer todo el estado global y almacenamiento secreto en la extensión.",
-			"button": "Restablecer"
+		"settings": {
+			"import": "Importar",
+			"export": "Exportar",
+			"reset": "Restablecer"
 		}
 	},
 	"thinkingBudget": {

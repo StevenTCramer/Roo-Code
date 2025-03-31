@@ -19,7 +19,9 @@ jest.mock("../../../utils/path", () => ({
 		// Handle both Windows and POSIX paths by using path.relative
 		const relativePath = require("path").relative(cwd, path)
 		// Convert to forward slashes for consistency
-		return relativePath.replace(/\\/g, "/")
+		let normalizedPath = relativePath.replace(/\\/g, "/")
+		// Add trailing slash if original path had one
+		return path.endsWith("/") ? normalizedPath + "/" : normalizedPath
 	}),
 }))
 

@@ -83,6 +83,7 @@
 	},
 	"providers": {
 		"configProfile": "配置設定檔",
+		"providerDocumentation": "{{provider}} 文件",
 		"description": "儲存不同的 API 設定以快速切換提供者和設定。",
 		"apiProvider": "API 提供者",
 		"model": "模型",
@@ -276,8 +277,9 @@
 		},
 		"maxReadFile": {
 			"label": "檔案讀取自動截斷閾值",
-			"description": "預設讀取檔案的行數",
-			"lines": "行"
+			"description": "當模型未指定起始/結束值時，Roo 讀取的行數。如果此數值小於檔案總行數，Roo 將產生程式碼定義的行號索引。特殊情況：-1 指示 Roo 讀取整個檔案（不建立索引），0 指示不讀取任何行並僅提供行索引以取得最小上下文。較低的值可最小化初始上下文使用，允許後續精確的行範圍讀取。明確指定起始/結束的請求不受此設定限制。",
+			"lines": "行",
+			"always_full_read": "始終讀取整個檔案"
 		}
 	},
 	"terminal": {
@@ -319,7 +321,7 @@
 	},
 	"experimental": {
 		"warning": "⚠️",
-		"DIFF_STRATEGY": {
+		"DIFF_STRATEGY_UNIFIED": {
 			"name": "使用實驗性統一 diff 策略",
 			"description": "此實驗性策略可能減少模型錯誤導致的重試次數，但需謹慎使用"
 		},
@@ -381,9 +383,10 @@
 			"label": "允許匿名錯誤和使用報告",
 			"description": "匿名資料協助改善 Roo Code，絕不傳送程式碼或個人資訊"
 		},
-		"reset": {
-			"description": "重設擴充功能的全局狀態和金鑰儲存",
-			"button": "重設"
+		"settings": {
+			"import": "匯入",
+			"export": "匯出",
+			"reset": "重設"
 		}
 	},
 	"thinkingBudget": {

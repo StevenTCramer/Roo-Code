@@ -35,13 +35,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -70,15 +68,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -131,17 +122,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -434,13 +432,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -469,15 +465,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -530,17 +519,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -922,13 +918,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -957,15 +951,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -1018,17 +1005,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -1374,13 +1368,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -1409,15 +1401,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -1470,17 +1455,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -1773,13 +1765,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -1808,15 +1798,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -1869,17 +1852,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -2172,13 +2162,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -2207,15 +2195,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -2268,17 +2249,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -2571,13 +2559,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -2606,15 +2592,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -2667,17 +2646,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -3019,13 +3005,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -3054,15 +3038,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -3115,17 +3092,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -3486,13 +3470,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -3521,15 +3503,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -3582,17 +3557,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -3934,13 +3916,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -3969,15 +3949,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -4030,17 +4003,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## apply_diff
@@ -4051,21 +4031,25 @@ Only a single operation is allowed per tool use.
 The SEARCH section must exactly match existing content including whitespace and indentation.
 If you're not confident in the exact content to search for, use the read_file tool first to get the exact content.
 When applying the diffs, be extra careful to remember to change any closing brackets or other syntax that may be affected by the diff farther down in the file.
+ALWAYS make as many changes in a single 'apply_diff' request as possible using multiple SEARCH/REPLACE blocks
 
 Parameters:
 - path: (required) The path of the file to modify (relative to the current working directory /test/path)
 - diff: (required) The search/replace block defining the changes.
-- start_line: (required) The line number where the search block starts.
-- end_line: (required) The line number where the search block ends.
 
 Diff format:
 \`\`\`
 <<<<<<< SEARCH
+:start_line: (required) The line number of original content where the search block starts.
+:end_line: (required) The line number of original content  where the search block ends.
+-------
 [exact content to find including whitespace]
 =======
 [new content to replace with]
 >>>>>>> REPLACE
+
 \`\`\`
+
 
 Example:
 
@@ -4081,6 +4065,9 @@ Original file:
 Search/Replace content:
 \`\`\`
 <<<<<<< SEARCH
+:start_line:1
+:end_line:5
+-------
 def calculate_total(items):
     total = 0
     for item in items:
@@ -4091,16 +4078,43 @@ def calculate_total(items):
     """Calculate total with 10% markup"""
     return sum(item * 1.1 for item in items)
 >>>>>>> REPLACE
+
 \`\`\`
+
+Search/Replace content with multi edits:
+\`\`\`
+<<<<<<< SEARCH
+:start_line:1
+:end_line:2
+-------
+def calculate_sum(items):
+    sum = 0
+=======
+def calculate_sum(items):
+    sum = 0
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+:start_line:4
+:end_line:5
+-------
+        total += item
+    return total
+=======
+        sum += item
+    return sum 
+>>>>>>> REPLACE
+\`\`\`
+
 
 Usage:
 <apply_diff>
 <path>File path here</path>
 <diff>
 Your search/replace content here
+You can use multi search/replace block in one diff block, but make sure to include the line numbers for each block.
+Only use a single line of '=======' between search and replacement content, because multiple '=======' will corrupt the file.
 </diff>
-<start_line>1</start_line>
-<end_line>5</end_line>
 </apply_diff>
 
 ## write_to_file
@@ -4395,13 +4409,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -4430,15 +4442,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -4491,17 +4496,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -4836,13 +4848,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -4871,15 +4881,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -4932,17 +4935,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -5397,13 +5407,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -5432,15 +5440,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -5493,17 +5494,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file
@@ -5872,13 +5880,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -5907,15 +5913,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -5968,17 +5967,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## ask_followup_question
@@ -6245,13 +6251,11 @@ Parameters:
 - path: (required) The path of the file to read (relative to the current working directory /test/path)
 - start_line: (optional) The starting line number to read from (1-based). If not provided, it starts from the beginning of the file.
 - end_line: (optional) The ending line number to read to (1-based, inclusive). If not provided, it reads to the end of the file.
-- auto_truncate: (optional) Whether to automatically truncate large files when start_line and end_line are not specified. If true and the file exceeds a certain line threshold, it will: a) return only a subset of lines to save tokens, b) include information about the total line count, and c) provide a summary of method definitions with their line ranges. You should set this to true unless you've been explicitly asked to read an entire large file at once, as this prevents context bloat that can lead to truncated responses. For backwards compatibility, it defaults to false when omitted.
 Usage:
 <read_file>
 <path>File path here</path>
 <start_line>Starting line number (optional)</start_line>
 <end_line>Ending line number (optional)</end_line>
-<auto_truncate>true or false (optional)</auto_truncate>
 </read_file>
 
 Examples:
@@ -6280,15 +6284,8 @@ Examples:
 <start_line>46</start_line>
 <end_line>68</end_line>
 </read_file>
+
 Note: When both start_line and end_line are provided, this tool efficiently streams only the requested lines, making it suitable for processing large files like logs, CSV files, and other large datasets without memory issues.
-
-5. Reading a large file with automatic truncation:
-<read_file>
-<path>src/large-module.ts</path>
-<auto_truncate>true</auto_truncate>
-</read_file>
-
-This will return a truncated version of the file with information about total line count and method definitions, helping to prevent context size issues with very large files.
 
 ## fetch_instructions
 Description: Request to fetch instructions to perform a task
@@ -6341,17 +6338,24 @@ Example: Requesting to list all files in the current directory
 </list_files>
 
 ## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) used in source code files at the top level of the specified directory. This tool provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
+Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
 Parameters:
-- path: (required) The path of the directory (relative to the current working directory /test/path) to list top level source code definitions for.
+- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
 Usage:
 <list_code_definition_names>
 <path>Directory path here</path>
 </list_code_definition_names>
 
-Example: Requesting to list all top level source code definitions in the current directory
+Examples:
+
+1. List definitions from a specific file:
 <list_code_definition_names>
-<path>.</path>
+<path>src/main.ts</path>
+</list_code_definition_names>
+
+2. List definitions from all files in a directory:
+<list_code_definition_names>
+<path>src/</path>
 </list_code_definition_names>
 
 ## write_to_file

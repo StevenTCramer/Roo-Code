@@ -83,6 +83,7 @@
 	},
 	"providers": {
 		"configProfile": "Perfil de configuração",
+		"providerDocumentation": "Documentação do {{provider}}",
 		"description": "Salve diferentes configurações de API para alternar rapidamente entre provedores e configurações.",
 		"apiProvider": "Provedor de API",
 		"model": "Modelo",
@@ -276,8 +277,9 @@
 		},
 		"maxReadFile": {
 			"label": "Limite de auto-truncamento de leitura de arquivo",
-			"description": "O número padrão de linhas para ler de um arquivo em um lote. Valores mais baixos reduzem o uso de contexto/recursos, mas podem exigir mais leituras para arquivos grandes.",
-			"lines": "linhas"
+			"description": "O Roo lê este número de linhas quando o modelo omite valores de início/fim. Se este número for menor que o total do arquivo, o Roo gera um índice de números de linha das definições de código. Casos especiais: -1 instrui o Roo a ler o arquivo inteiro (sem indexação), e 0 instrui a não ler linhas e fornecer apenas índices de linha para contexto mínimo. Valores mais baixos minimizam o uso inicial de contexto, permitindo leituras posteriores precisas de intervalos de linhas. Requisições com início/fim explícitos não são limitadas por esta configuração.",
+			"lines": "linhas",
+			"always_full_read": "Sempre ler o arquivo inteiro"
 		}
 	},
 	"terminal": {
@@ -319,7 +321,7 @@
 	},
 	"experimental": {
 		"warning": "⚠️",
-		"DIFF_STRATEGY": {
+		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usar estratégia diff unificada experimental",
 			"description": "Ativar a estratégia diff unificada experimental. Esta estratégia pode reduzir o número de novas tentativas causadas por erros do modelo, mas pode causar comportamento inesperado ou edições incorretas. Ative apenas se compreender os riscos e estiver disposto a revisar cuidadosamente todas as alterações."
 		},
@@ -381,9 +383,10 @@
 			"label": "Permitir relatórios anônimos de erros e uso",
 			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Nunca são enviados código, prompts ou informações pessoais. Consulte nossa política de privacidade para mais detalhes."
 		},
-		"reset": {
-			"description": "Redefinir todo o estado global e armazenamento secreto na extensão.",
-			"button": "Redefinir"
+		"settings": {
+			"import": "Importar",
+			"export": "Exportar",
+			"reset": "Redefinir"
 		}
 	},
 	"thinkingBudget": {

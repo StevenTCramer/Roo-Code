@@ -82,6 +82,7 @@
 		}
 	},
 	"providers": {
+		"providerDocumentation": "{{provider}} documentation",
 		"configProfile": "Configuration Profile",
 		"description": "Save different API configurations to quickly switch between providers and settings.",
 		"apiProvider": "API Provider",
@@ -276,8 +277,9 @@
 		},
 		"maxReadFile": {
 			"label": "File read auto-truncate threshold",
-			"description": "The default number of lines to read from a file in one batch. Lower values reduce context/resource usage but may require more reads for large files.",
-			"lines": "lines"
+			"description": "Roo reads this number of lines when the model omits start/end values. If this number is less than the file's total, Roo generates a line number index of code definitions. Special cases: -1 instructs Roo to read the entire file (without indexing), and 0 instructs it to read no lines and provides line indexes only for minimal context. Lower values minimize initial context usage, enabling precise subsequent line-range reads. Explicit start/end requests are not limited by this setting.",
+			"lines": "lines",
+			"always_full_read": "Always read entire file"
 		}
 	},
 	"terminal": {
@@ -319,7 +321,7 @@
 	},
 	"experimental": {
 		"warning": "⚠️",
-		"DIFF_STRATEGY": {
+		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Use experimental unified diff strategy",
 			"description": "Enable the experimental unified diff strategy. This strategy might reduce the number of retries caused by model errors but may cause unexpected behavior or incorrect edits. Only enable if you understand the risks and are willing to carefully review all changes."
 		},
@@ -380,9 +382,10 @@
 			"label": "Allow anonymous error and usage reporting",
 			"description": "Help improve Roo Code by sending anonymous usage data and error reports. No code, prompts, or personal information is ever sent. See our privacy policy for more details."
 		},
-		"reset": {
-			"description": "Reset all global state and secret storage in the extension.",
-			"button": "Reset"
+		"settings": {
+			"import": "Import",
+			"export": "Export",
+			"reset": "Reset"
 		}
 	},
 	"thinkingBudget": {
