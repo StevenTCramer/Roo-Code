@@ -11,7 +11,7 @@ import { serializeError } from "serialize-error"
 import * as vscode from "vscode"
 
 // schemas
-import { TokenUsage, ToolUsage, ToolName } from "../schemas"
+import { TokenUsage, ToolUsage, ToolName, logLevels } from "../schemas"
 
 // api
 import { ApiHandler, buildApiHandler } from "../api"
@@ -566,6 +566,25 @@ export class Cline extends EventEmitter<ClineEvents> {
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+	}
+
+	/**
+	 * Logs a message to the output channel and console.
+	 * This method is intended for internal logging triggered by the AI
+	 * via <log_entry> blocks and does not require user approval.
+	 * @param message The message to log.
+	 * @param level The log level (debug, info, warn, error). Defaults to "info".
+	 */
+	public log(message: string, level: (typeof logLevels)[number] = "info") {
+		const timestamp = new Date().toISOString()
+		const formattedMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
+
+		// Get the provider instance
+		const provider = this.providerRef.deref()
+		if (provider) {
+			// Use the provider's log method which logs to both console and output channel
+			provider.log(formattedMessage)
+		}
 	}
 
 	// Task lifecycle
@@ -1195,6 +1214,12 @@ export class Cline extends EventEmitter<ClineEvents> {
 		const block = cloneDeep(this.assistantMessageContent[this.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
 
 		switch (block.type) {
+			case "log_entry": {
+				// Log entries are processed immediately without requiring approval
+				// and don't count as a tool use
+				this.log(block.message, block.level)
+				break
+			}
 			case "text": {
 				if (this.didRejectTool || this.didAlreadyUseTool) {
 					break
