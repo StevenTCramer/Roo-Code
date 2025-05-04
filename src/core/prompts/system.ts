@@ -19,6 +19,7 @@ import {
 	getSystemInfoSection,
 	getObjectiveSection,
 	getSharedToolUseSection,
+	getLogEntrySection,
 	getMcpServersSection,
 	getToolUseGuidelinesSection,
 	getCapabilitiesSection,
@@ -66,6 +67,8 @@ async function generatePrompt(
 	const basePrompt = `${roleDefinition}
 
 ${getSharedToolUseSection()}
+
+${getLogEntrySection()}
 
 ${getToolDescriptionsForMode(
 	mode,
