@@ -1,7 +1,7 @@
-import { TextContent, ToolUse, ToolParamName, toolParamNames } from "../../shared/tools"
-import { toolNames, ToolName } from "../../schemas"
+import { TextContent, ToolUse, ToolParamName, toolParamNames, LogEntry } from "../../shared/tools"
+import { toolNames, ToolName, logLevels } from "../../schemas"
 
-export type AssistantMessageContent = TextContent | ToolUse
+export type AssistantMessageContent = TextContent | ToolUse | LogEntry
 
 export function parseAssistantMessage(assistantMessage: string) {
 	let contentBlocks: AssistantMessageContent[] = []
@@ -9,6 +9,8 @@ export function parseAssistantMessage(assistantMessage: string) {
 	let currentTextContentStartIndex = 0
 	let currentToolUse: ToolUse | undefined = undefined
 	let currentToolUseStartIndex = 0
+	let currentLogEntry: LogEntry | undefined = undefined
+	let currentLogEntryStartIndex = 0
 	let currentParamName: ToolParamName | undefined = undefined
 	let currentParamValueStartIndex = 0
 	let accumulator = ""
@@ -78,6 +80,62 @@ export function parseAssistantMessage(assistantMessage: string) {
 
 		// no currentToolUse
 
+		// Check for log_entry blocks
+		if (currentLogEntry) {
+			const currentLogValue = accumulator.slice(currentLogEntryStartIndex)
+			const logEntryClosingTag = `</log_entry>`
+
+			if (currentLogValue.endsWith(logEntryClosingTag)) {
+				// End of a log entry
+				currentLogEntry.partial = false
+
+				// Parse the log entry content to extract message and level
+				const messageMatch = /<message>(.*?)<\/message>/s.exec(currentLogValue)
+				const levelMatch = /<level>(.*?)<\/level>/s.exec(currentLogValue)
+
+				if (messageMatch) {
+					currentLogEntry.message = messageMatch[1].trim()
+				}
+
+				if (levelMatch && logLevels.includes(levelMatch[1].trim() as any)) {
+					currentLogEntry.level = levelMatch[1].trim() as (typeof logLevels)[number]
+				}
+
+				contentBlocks.push(currentLogEntry)
+				currentLogEntry = undefined
+				continue
+			} else {
+				// Partial log entry is accumulating
+				continue
+			}
+		}
+
+		// Check for log_entry opening tag
+		const logEntryOpeningTag = `<log_entry>`
+		if (accumulator.endsWith(logEntryOpeningTag)) {
+			// Start of a new log entry
+			currentLogEntry = {
+				type: "log_entry",
+				message: "",
+				level: "info", // Default level
+				partial: true,
+			}
+			currentLogEntryStartIndex = accumulator.length
+
+			// This also indicates the end of the current text content
+			if (currentTextContent) {
+				currentTextContent.partial = false
+				// Remove the partially accumulated log entry tag from the end of text
+				currentTextContent.content = currentTextContent.content
+					.slice(0, -logEntryOpeningTag.slice(0, -1).length)
+					.trim()
+				contentBlocks.push(currentTextContent)
+				currentTextContent = undefined
+			}
+
+			continue
+		}
+
 		let didStartToolUse = false
 		const possibleToolUseOpeningTags = toolNames.map((name) => `<${name}>`)
 		for (const toolUseOpeningTag of possibleToolUseOpeningTags) {
@@ -128,7 +186,26 @@ export function parseAssistantMessage(assistantMessage: string) {
 		contentBlocks.push(currentToolUse)
 	}
 
-	// Note: it doesnt matter if check for currentToolUse or currentTextContent, only one of them will be defined since only one can be partial at a time
+	if (currentLogEntry) {
+		// Stream did not complete log entry, add it as partial
+		// Try to extract any partial message or level information
+		const partialContent = accumulator.slice(currentLogEntryStartIndex)
+		const messageMatch = /<message>(.*?)(?:<\/message>)?$/s.exec(partialContent)
+		const levelMatch = /<level>(.*?)(?:<\/level>)?$/s.exec(partialContent)
+
+		if (messageMatch) {
+			currentLogEntry.message = messageMatch[1].trim()
+		}
+
+		if (levelMatch && logLevels.includes(levelMatch[1].trim() as any)) {
+			currentLogEntry.level = levelMatch[1].trim() as (typeof logLevels)[number]
+		}
+
+		contentBlocks.push(currentLogEntry)
+	}
+
+	// Note: it doesnt matter if check for currentToolUse, currentLogEntry, or currentTextContent,
+	// only one of them will be defined since only one can be partial at a time
 	if (currentTextContent) {
 		// stream did not complete text content, add it as partial
 		contentBlocks.push(currentTextContent)

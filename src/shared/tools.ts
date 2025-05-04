@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "../schemas"
+import { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, logLevels } from "../schemas"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -23,6 +23,13 @@ export type ToolDescription = () => string
 export interface TextContent {
 	type: "text"
 	content: string
+	partial: boolean
+}
+
+export interface LogEntry {
+	type: "log_entry"
+	message: string
+	level: (typeof logLevels)[number]
 	partial: boolean
 }
 
