@@ -1217,7 +1217,10 @@ export class Cline extends EventEmitter<ClineEvents> {
 			case "log_entry": {
 				// Log entries are processed immediately without requiring approval
 				// and don't count as a tool use
-				this.log(block.message, block.level)
+				// Only log complete (non-partial) log entries to avoid logging with incorrect levels
+				if (!block.partial) {
+					this.log(block.message, block.level)
+				}
 				break
 			}
 			case "text": {
