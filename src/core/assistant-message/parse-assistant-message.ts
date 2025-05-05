@@ -1,5 +1,6 @@
-import { TextContent, ToolUse, ToolParamName, toolParamNames, LogDirective } from "../../shared/tools"
+import { TextContent, ToolUse, ToolParamName, toolParamNames } from "../../shared/tools"
 import { toolNames, ToolName, logLevels } from "../../schemas"
+import { LogDirective } from "./directives/log-directive"
 
 export type AssistantMessageContent = TextContent | ToolUse | LogDirective
 

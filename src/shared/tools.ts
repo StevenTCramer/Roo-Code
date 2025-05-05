@@ -26,13 +26,6 @@ export interface TextContent {
 	partial: boolean
 }
 
-export interface LogDirective {
-	type: "log_entry"
-	message: string
-	level: (typeof logLevels)[number]
-	partial: boolean
-}
-
 export const toolParamNames = [
 	"command",
 	"path",
