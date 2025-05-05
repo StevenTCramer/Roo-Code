@@ -27,6 +27,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -493,6 +531,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
@@ -961,6 +1037,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -1427,6 +1541,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
@@ -1950,6 +2102,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
@@ -2486,6 +2676,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -3008,6 +3236,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
@@ -3566,6 +3832,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -4074,6 +4378,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
@@ -4619,6 +4961,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -5077,6 +5457,44 @@ For example:
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
 
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
+
 # Tools
 
 ## read_file
@@ -5451,6 +5869,44 @@ For example:
 </read_file>
 
 Always adhere to this format for the tool use to ensure proper parsing and execution.
+
+====
+
+LOG ENTRIES
+
+You can use log entries to output debugging information to the VSCode output channel. Unlike tools, log entries don't require approval and don't count toward the one-tool-per-message limit.
+
+# Purpose and Context
+
+The VSCode OutputChannel is a dedicated console-like interface within VSCode where extensions can write diagnostic information, separate from the user's workspace files.
+
+Unlike other tools that create or modify files in the workspace, log entries are purely for diagnostic purposes within the extension's runtime environment.
+
+# Log Entry Formatting
+
+Log entries are formatted using XML-style tags. Here's the structure:
+
+<log_entry>
+<message>Your log message here</message>
+<level>info</level>
+</log_entry>
+
+The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
+
+For example:
+
+<log_entry>
+<message>Starting task execution</message>
+<level>info</level>
+</log_entry>
+
+<log_entry>
+<message>Failed to parse input: invalid JSON</message>
+<level>error</level>
+</log_entry>
+
+You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
+
 
 # Tools
 
