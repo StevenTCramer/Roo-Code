@@ -26,7 +26,7 @@ export interface TextContent {
 	partial: boolean
 }
 
-export interface LogEntry {
+export interface LogDirective {
 	type: "log_entry"
 	message: string
 	level: (typeof logLevels)[number]

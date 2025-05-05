@@ -1,7 +1,12 @@
-import { TextContent, ToolUse, ToolParamName, toolParamNames, LogEntry } from "../../shared/tools"
+import { TextContent, ToolUse, ToolParamName, toolParamNames, LogDirective } from "../../shared/tools"
 import { toolNames, ToolName, logLevels } from "../../schemas"
 
-export type AssistantMessageContent = TextContent | ToolUse | LogEntry
+export type AssistantMessageContent = TextContent | ToolUse | LogDirective
+
+//TODO: If we have agreement on the new type names
+// Rename TextContent to DisplayDirective
+// Rename ToolUse to ToolDirective
+// export type Directive = DisplayDirective | ToolDirective | LogDirective
 
 /**
  * Parses a tool parameter within a tool use
@@ -96,10 +101,10 @@ function processToolUse(
  * Processes a log entry and checks if it's complete
  */
 function processLogEntry(
-	currentLogEntry: LogEntry,
+	currentLogEntry: LogDirective,
 	currentLogEntryStartIndex: number,
 	accumulator: string,
-): { completed: boolean; logEntry: LogEntry } {
+): { completed: boolean; logEntry: LogDirective } {
 	const currentLogValue = accumulator.slice(currentLogEntryStartIndex)
 	const logEntryClosingTag = `</log_entry>`
 
@@ -145,7 +150,7 @@ function detectLogEntryStart(
 	currentTextContent: TextContent | undefined,
 ): {
 	isLogEntry: boolean
-	logEntry?: LogEntry
+	logEntry?: LogDirective
 	updatedTextContent?: TextContent
 	shouldPushTextContent: boolean
 } {
@@ -157,7 +162,7 @@ function detectLogEntryStart(
 			message: "",
 			level: "info", // Default level
 			partial: true,
-		} as LogEntry
+		} as LogDirective
 
 		let updatedTextContent = currentTextContent
 		let shouldPushTextContent = false
@@ -243,7 +248,7 @@ function finalizePartialContent(
 	currentToolUse: ToolUse | undefined,
 	currentParamName: ToolParamName | undefined,
 	currentParamValueStartIndex: number,
-	currentLogEntry: LogEntry | undefined,
+	currentLogEntry: LogDirective | undefined,
 	currentLogEntryStartIndex: number,
 	currentTextContent: TextContent | undefined,
 	accumulator: string,
@@ -281,7 +286,7 @@ function finalizePartialContent(
 
 /**
  * Parses an assistant message into content blocks
- * @param assistantMessage The message to parse
+ * @param assistantMessage The message to parse0
  * @returns Array of content blocks (text, tool use, log entry)
  */
 export function parseAssistantMessage(assistantMessage: string) {
@@ -290,7 +295,7 @@ export function parseAssistantMessage(assistantMessage: string) {
 	let currentTextContentStartIndex = 0
 	let currentToolUse: ToolUse | undefined = undefined
 	let currentToolUseStartIndex = 0
-	let currentLogEntry: LogEntry | undefined = undefined
+	let currentLogEntry: LogDirective | undefined = undefined
 	let currentLogEntryStartIndex = 0
 	let currentParamName: ToolParamName | undefined = undefined
 	let currentParamValueStartIndex = 0
