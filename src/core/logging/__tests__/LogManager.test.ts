@@ -1,5 +1,4 @@
 import { LogManager } from "../LogManager"
-import { logLevels } from "../../../schemas"
 
 describe("LogManager", () => {
 	let mockProvider: any
