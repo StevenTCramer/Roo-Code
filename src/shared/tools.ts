@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { ClineAsk, ToolProgressStatus, ToolGroup, ToolName, logLevels } from "../schemas"
+import { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "../schemas"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
