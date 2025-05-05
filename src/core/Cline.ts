@@ -11,7 +11,7 @@ import { serializeError } from "serialize-error"
 import * as vscode from "vscode"
 
 // schemas
-import { TokenUsage, ToolUsage, ToolName, logLevels } from "../schemas"
+import { TokenUsage, ToolUsage, ToolName } from "../schemas"
 
 // api
 import { ApiHandler, buildApiHandler } from "../api"
@@ -91,6 +91,7 @@ import { ClineProvider } from "./webview/ClineProvider"
 import { validateToolUse } from "./mode-validator"
 import { MultiSearchReplaceDiffStrategy } from "./diff/strategies/multi-search-replace"
 import { readApiMessages, saveApiMessages, readTaskMessages, saveTaskMessages, taskMetadata } from "./task-persistence"
+import { LogManager } from "./logging"
 
 type UserContent = Array<Anthropic.Messages.ContentBlockParam>
 
@@ -154,6 +155,7 @@ export class Cline extends EventEmitter<ClineEvents> {
 	diffStrategy?: DiffStrategy
 	diffEnabled: boolean = false
 	fuzzyMatchThreshold: number
+	private logManager: LogManager
 
 	apiConversationHistory: (Anthropic.MessageParam & { ts?: number })[] = []
 	clineMessages: ClineMessage[] = []
@@ -235,7 +237,7 @@ export class Cline extends EventEmitter<ClineEvents> {
 
 		this.rooIgnoreController = new RooIgnoreController(this.cwd)
 		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
-
+		this.logManager = new LogManager(provider)
 		this.rooIgnoreController.initialize().catch((error) => {
 			console.error("Failed to initialize RooIgnoreController:", error)
 		})
@@ -566,25 +568,6 @@ export class Cline extends EventEmitter<ClineEvents> {
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
-	}
-
-	/**
-	 * Logs a message to the output channel and console.
-	 * This method is intended for internal logging triggered by the AI
-	 * via <log_entry> blocks and does not require user approval.
-	 * @param message The message to log.
-	 * @param level The log level (debug, info, warn, error). Defaults to "info".
-	 */
-	public log(message: string, level: (typeof logLevels)[number] = "info") {
-		const timestamp = new Date().toISOString()
-		const formattedMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
-
-		// Get the provider instance
-		const provider = this.providerRef.deref()
-		if (provider) {
-			// Use the provider's log method which logs to both console and output channel
-			provider.log(formattedMessage)
-		}
 	}
 
 	// Task lifecycle
@@ -1217,10 +1200,7 @@ export class Cline extends EventEmitter<ClineEvents> {
 			case "log_entry": {
 				// Log entries are processed immediately without requiring approval
 				// and don't count as a tool use
-				// Only log complete (non-partial) log entries to avoid logging with incorrect levels
-				if (!block.partial) {
-					this.log(block.message, block.level)
-				}
+				this.logManager.processLogEntry(block.message, block.level, block.partial)
 				break
 			}
 			case "text": {
