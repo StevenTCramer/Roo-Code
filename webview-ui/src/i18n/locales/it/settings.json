@@ -118,14 +118,20 @@
 		"headerValue": "Valore intestazione",
 		"noCustomHeaders": "Nessuna intestazione personalizzata definita. Fai clic sul pulsante + per aggiungerne una.",
 		"requestyApiKey": "Chiave API Requesty",
+		"flushModelsCache": "Svuota cache dei modelli",
+		"flushedModelsCache": "Cache svuotata, riapri la vista delle impostazioni",
 		"getRequestyApiKey": "Ottieni chiave API Requesty",
 		"openRouterTransformsText": "Comprimi prompt e catene di messaggi alla dimensione del contesto (<a>Trasformazioni OpenRouter</a>)",
 		"anthropicApiKey": "Chiave API Anthropic",
 		"getAnthropicApiKey": "Ottieni chiave API Anthropic",
 		"anthropicUseAuthToken": "Passa la chiave API Anthropic come header di autorizzazione invece di X-Api-Key",
+		"chutesApiKey": "Chiave API Chutes",
+		"getChutesApiKey": "Ottieni chiave API Chutes",
 		"deepSeekApiKey": "Chiave API DeepSeek",
 		"getDeepSeekApiKey": "Ottieni chiave API DeepSeek",
 		"geminiApiKey": "Chiave API Gemini",
+		"getGroqApiKey": "Ottieni chiave API Groq",
+		"groqApiKey": "Chiave API Groq",
 		"getGeminiApiKey": "Ottieni chiave API Gemini",
 		"openAiApiKey": "Chiave API OpenAI",
 		"openAiBaseUrl": "URL base",
@@ -310,6 +316,14 @@
 		}
 	},
 	"terminal": {
+		"basic": {
+			"label": "Impostazioni terminale: Base",
+			"description": "Impostazioni base del terminale"
+		},
+		"advanced": {
+			"label": "Impostazioni terminale: Avanzate",
+			"description": "Le seguenti opzioni potrebbero richiedere il riavvio del terminale per applicare l'impostazione."
+		},
 		"outputLineLimit": {
 			"label": "Limite output terminale",
 			"description": "Numero massimo di righe da includere nell'output del terminale durante l'esecuzione dei comandi. Quando superato, le righe verranno rimosse dal centro, risparmiando token."
@@ -349,6 +363,10 @@
 		"zshP10k": {
 			"label": "Abilita integrazione Powerlevel10k",
 			"description": "Quando abilitato, imposta POWERLEVEL9K_TERM_SHELL_INTEGRATION=true per abilitare le funzionalità di integrazione della shell Powerlevel10k. (sperimentale)"
+		},
+		"inheritEnv": {
+			"label": "Eredita variabili d'ambiente",
+			"description": "Quando abilitato, il terminale eredita le variabili d'ambiente dal processo padre di VSCode, come le impostazioni di integrazione della shell definite nel profilo utente. Questo attiva direttamente l'impostazione globale di VSCode `terminal.integrated.inheritEnv`"
 		}
 	},
 	"advanced": {

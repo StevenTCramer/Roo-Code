@@ -25,6 +25,7 @@ import {
 	getCapabilitiesSection,
 	getModesSection,
 	addCustomInstructions,
+	markdownFormattingSection,
 } from "./sections"
 import { loadSystemPromptFile } from "./sections/custom-system-prompt"
 import { formatLanguage } from "../../shared/language"
@@ -65,6 +66,8 @@ async function generatePrompt(
 	])
 
 	const basePrompt = `${roleDefinition}
+
+${markdownFormattingSection()}
 
 ${getSharedToolUseSection()}
 

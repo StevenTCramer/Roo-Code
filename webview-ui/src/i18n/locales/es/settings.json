@@ -106,6 +106,8 @@
 		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el modelo que desea utilizar. Ejemplos de formato:",
 		"awsCustomArnDesc": "Asegúrese de que la región en el ARN coincida con la región de AWS seleccionada anteriormente.",
 		"openRouterApiKey": "Clave API de OpenRouter",
+		"flushModelsCache": "Limpiar modelos en caché",
+		"flushedModelsCache": "Caché limpiada, por favor vuelva a abrir la vista de configuración",
 		"getOpenRouterApiKey": "Obtener clave API de OpenRouter",
 		"apiKeyStorageNotice": "Las claves API se almacenan de forma segura en el Almacenamiento Secreto de VSCode",
 		"glamaApiKey": "Clave API de Glama",
@@ -123,9 +125,13 @@
 		"anthropicApiKey": "Clave API de Anthropic",
 		"getAnthropicApiKey": "Obtener clave API de Anthropic",
 		"anthropicUseAuthToken": "Pasar la clave API de Anthropic como encabezado de autorización en lugar de X-Api-Key",
+		"chutesApiKey": "Clave API de Chutes",
+		"getChutesApiKey": "Obtener clave API de Chutes",
 		"deepSeekApiKey": "Clave API de DeepSeek",
 		"getDeepSeekApiKey": "Obtener clave API de DeepSeek",
 		"geminiApiKey": "Clave API de Gemini",
+		"getGroqApiKey": "Obtener clave API de Groq",
+		"groqApiKey": "Clave API de Groq",
 		"getGeminiApiKey": "Obtener clave API de Gemini",
 		"openAiApiKey": "Clave API de OpenAI",
 		"openAiBaseUrl": "URL base",
@@ -310,6 +316,14 @@
 		}
 	},
 	"terminal": {
+		"basic": {
+			"label": "Configuración del terminal: Básica",
+			"description": "Configuración básica del terminal"
+		},
+		"advanced": {
+			"label": "Configuración del terminal: Avanzada",
+			"description": "Las siguientes opciones pueden requerir reiniciar el terminal para aplicar la configuración."
+		},
 		"outputLineLimit": {
 			"label": "Límite de salida de terminal",
 			"description": "Número máximo de líneas a incluir en la salida del terminal al ejecutar comandos. Cuando se excede, se eliminarán líneas del medio, ahorrando token."
@@ -328,7 +342,7 @@
 		},
 		"zdotdir": {
 			"label": "Habilitar gestión de ZDOTDIR",
-			"description": "Cuando está habilitado, crea un directorio temporal para ZDOTDIR para manejar correctamente la integración del shell zsh. Esto asegura que la integración del shell de VSCode funcione correctamente con zsh mientras preserva tu configuración de zsh. (experimental)"
+			"description": "Cuando está habilitado, crea un directorio temporal para ZDOTDIR para manejar correctamente la integración del shell zsh. Esto asegura que la integración del shell de VSCode funcione correctamente con zsh mientras preserva tu configuración de zsh."
 		},
 		"commandDelay": {
 			"label": "Retraso de comando del terminal",
@@ -344,11 +358,15 @@
 		},
 		"zshOhMy": {
 			"label": "Habilitar integración Oh My Zsh",
-			"description": "Cuando está habilitado, establece ITERM_SHELL_INTEGRATION_INSTALLED=Yes para habilitar las características de integración del shell Oh My Zsh. Aplicar esta configuración puede requerir reiniciar el IDE. (experimental)"
+			"description": "Cuando está habilitado, establece ITERM_SHELL_INTEGRATION_INSTALLED=Yes para habilitar las características de integración del shell Oh My Zsh. Aplicar esta configuración puede requerir reiniciar el IDE."
 		},
 		"zshP10k": {
 			"label": "Habilitar integración Powerlevel10k",
-			"description": "Cuando está habilitado, establece POWERLEVEL9K_TERM_SHELL_INTEGRATION=true para habilitar las características de integración del shell Powerlevel10k. (experimental)"
+			"description": "Cuando está habilitado, establece POWERLEVEL9K_TERM_SHELL_INTEGRATION=true para habilitar las características de integración del shell Powerlevel10k."
+		},
+		"inheritEnv": {
+			"label": "Heredar variables de entorno",
+			"description": "Cuando está habilitado, el terminal hereda las variables de entorno del proceso padre de VSCode, como la configuración de integración del shell definida en el perfil del usuario. Esto alterna directamente la configuración global de VSCode `terminal.integrated.inheritEnv`"
 		}
 	},
 	"advanced": {
