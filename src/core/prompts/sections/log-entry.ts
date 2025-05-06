@@ -15,24 +15,24 @@ Unlike other tools that create or modify files in the workspace, log entries are
 
 Log entries are formatted using XML-style tags. Here's the structure:
 
-<log_entry>
+<log_message>
 <message>Your log message here</message>
 <level>info</level>
-</log_entry>
+</log_message>
 
 The level parameter is optional and defaults to "info". Valid levels are: "debug", "info", "warn", and "error".
 
 For example:
 
-<log_entry>
+<log_message>
 <message>Starting task execution</message>
 <level>info</level>
-</log_entry>
+</log_message>
 
-<log_entry>
+<log_message>
 <message>Failed to parse input: invalid JSON</message>
 <level>error</level>
-</log_entry>
+</log_message>
 
 You can use log entries multiple times in a single message, and they will be processed immediately without requiring user approval.
 `

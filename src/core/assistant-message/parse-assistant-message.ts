@@ -107,7 +107,7 @@ function processLogEntry(
 	accumulator: string,
 ): { completed: boolean; logEntry: LogDirective } {
 	const currentLogValue = accumulator.slice(currentLogEntryStartIndex)
-	const logEntryClosingTag = `</log_entry>`
+	const logEntryClosingTag = `</log_message>`
 
 	if (currentLogValue.endsWith(logEntryClosingTag)) {
 		// End of a log entry
@@ -155,11 +155,11 @@ function detectLogEntryStart(
 	updatedTextContent?: TextContent
 	shouldPushTextContent: boolean
 } {
-	const logEntryOpeningTag = `<log_entry>`
+	const logEntryOpeningTag = `<log_message>`
 	if (accumulator.endsWith(logEntryOpeningTag)) {
 		// Start of a new log entry
 		const logEntry = {
-			type: "log_entry",
+			type: "log_message",
 			message: "",
 			level: "info", // Default level
 			partial: true,

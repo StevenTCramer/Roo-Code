@@ -1197,8 +1197,8 @@ export class Cline extends EventEmitter<ClineEvents> {
 		const block = cloneDeep(this.assistantMessageContent[this.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
 
 		switch (block.type) {
-			case "log_entry": {
-				// Log entries are processed immediately without requiring approval
+			case "log_message": {
+				// Log messages are processed immediately without requiring approval
 				// and don't count as a tool use
 				this.logManager.processLogEntry(block.message, block.level, block.partial)
 				break

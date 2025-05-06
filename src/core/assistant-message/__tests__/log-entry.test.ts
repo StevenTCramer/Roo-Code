@@ -2,10 +2,10 @@ import { parseAssistantMessage } from "../parse-assistant-message"
 
 describe("Log Entry Parsing", () => {
 	it("should parse complete log entries correctly", () => {
-		const message = `<log_entry>
+		const message = `<log_message>
 <message>This is a test log message</message>
 <level>debug</level>
-</log_entry>`
+</log_message>`
 
 		const result = parseAssistantMessage(message)
 
@@ -14,7 +14,7 @@ describe("Log Entry Parsing", () => {
 
 		expect(filteredResult).toHaveLength(1)
 		expect(filteredResult[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a test log message",
 			level: "debug",
 			partial: false,
@@ -22,7 +22,7 @@ describe("Log Entry Parsing", () => {
 	})
 
 	it("should mark partial log entries as partial", () => {
-		const message = `<log_entry>
+		const message = `<log_message>
 <message>This is a test log message</message>`
 
 		const result = parseAssistantMessage(message)
@@ -32,7 +32,7 @@ describe("Log Entry Parsing", () => {
 
 		expect(filteredResult).toHaveLength(1)
 		expect(filteredResult[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a test log message",
 			level: "info", // Default level
 			partial: true,
@@ -40,9 +40,9 @@ describe("Log Entry Parsing", () => {
 	})
 
 	it("should handle log entries with only message tag", () => {
-		const message = `<log_entry>
+		const message = `<log_message>
 <message>This is a test log message</message>
-</log_entry>`
+</log_message>`
 
 		const result = parseAssistantMessage(message)
 
@@ -51,7 +51,7 @@ describe("Log Entry Parsing", () => {
 
 		expect(filteredResult).toHaveLength(1)
 		expect(filteredResult[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a test log message",
 			level: "info", // Default level
 			partial: false,
@@ -61,10 +61,10 @@ describe("Log Entry Parsing", () => {
 	it("should simulate streaming behavior with partial log entries", () => {
 		// Simulate streaming chunks
 		const chunks = [
-			"<log_entry>\n",
+			"<log_message>\n",
 			"<message>This is a debug level log message</message>\n",
 			"<level>debug</level>\n",
-			"</log_entry>",
+			"</log_message>",
 		]
 
 		let accumulatedMessage = ""
@@ -80,7 +80,7 @@ describe("Log Entry Parsing", () => {
 		// First chunk: Just the opening tag - filter out empty text blocks
 		const filteredResults0 = results[0].filter((block) => !(block.type === "text" && block.content === ""))
 		expect(filteredResults0[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "",
 			level: "info", // Default level
 			partial: true,
@@ -89,7 +89,7 @@ describe("Log Entry Parsing", () => {
 		// Second chunk: Has message but not level - filter out empty text blocks
 		const filteredResults1 = results[1].filter((block) => !(block.type === "text" && block.content === ""))
 		expect(filteredResults1[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a debug level log message</message>",
 			level: "info", // Still default level
 			partial: true,
@@ -98,7 +98,7 @@ describe("Log Entry Parsing", () => {
 		// Third chunk: Has message and level but not closing tag - filter out empty text blocks
 		const filteredResults2 = results[2].filter((block) => !(block.type === "text" && block.content === ""))
 		expect(filteredResults2[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a debug level log message</message>\n<level>debug</level>",
 			level: "info", // Still default level at this point
 			partial: true,
@@ -107,7 +107,7 @@ describe("Log Entry Parsing", () => {
 		// Fourth chunk: Complete log entry - filter out empty text blocks
 		const filteredResults3 = results[3].filter((block) => !(block.type === "text" && block.content === ""))
 		expect(filteredResults3[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a debug level log message",
 			level: "debug",
 			partial: false,
@@ -115,24 +115,24 @@ describe("Log Entry Parsing", () => {
 	})
 
 	it("should handle multiple log entries with different levels", () => {
-		const message = `<log_entry>
+		const message = `<log_message>
 <message>This is a debug message</message>
 <level>debug</level>
-</log_entry>
+</log_message>
 
-<log_entry>
+<log_message>
 <message>This is an info message</message>
-</log_entry>
+</log_message>
 
-<log_entry>
+<log_message>
 <message>This is a warning message</message>
 <level>warn</level>
-</log_entry>
+</log_message>
 
-<log_entry>
+<log_message>
 <message>This is an error message</message>
 <level>error</level>
-</log_entry>`
+</log_message>`
 
 		const result = parseAssistantMessage(message)
 
@@ -141,25 +141,25 @@ describe("Log Entry Parsing", () => {
 
 		expect(filteredResult).toHaveLength(4)
 		expect(filteredResult[0]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a debug message",
 			level: "debug",
 			partial: false,
 		})
 		expect(filteredResult[1]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is an info message",
 			level: "info", // Default level
 			partial: false,
 		})
 		expect(filteredResult[2]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is a warning message",
 			level: "warn",
 			partial: false,
 		})
 		expect(filteredResult[3]).toEqual({
-			type: "log_entry",
+			type: "log_message",
 			message: "This is an error message",
 			level: "error",
 			partial: false,

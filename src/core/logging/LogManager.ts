@@ -3,7 +3,7 @@ import { ClineProvider } from "../webview/ClineProvider"
 
 /**
  * Manages logging functionality for Cline instances.
- * Handles log entries from AI-generated <log_entry> blocks.
+ * Handles log messages from AI-generated <log_message> blocks.
  */
 export class LogManager {
 	private providerRef: WeakRef<ClineProvider>
@@ -19,7 +19,7 @@ export class LogManager {
 	/**
 	 * Logs a message to the output channel and console.
 	 * This method is intended for internal logging triggered by the AI
-	 * via <log_entry> blocks and does not require user approval.
+	 * via <log_message> blocks and does not require user approval.
 	 * @param message The message to log.
 	 * @param level The log level (debug, info, warn, error). Defaults to "info".
 	 */
@@ -36,14 +36,14 @@ export class LogManager {
 	}
 
 	/**
-	 * Processes a log entry directive from the assistant.
+	 * Processes a log message directive from the assistant.
 	 * @param message The log message
 	 * @param level The log level
-	 * @param partial Whether the log entry is partial
+	 * @param partial Whether the log message is partial
 	 * @returns true if the log was processed, false otherwise
 	 */
 	public processLogEntry(message: string, level: (typeof logLevels)[number], partial: boolean): boolean {
-		// Only log complete (non-partial) log entries to avoid logging with incorrect levels
+		// Only log complete (non-partial) log messages to avoid logging with incorrect levels
 		if (!partial) {
 			this.log(message, level)
 			return true
