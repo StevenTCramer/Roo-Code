@@ -19,7 +19,7 @@ import {
 	getSystemInfoSection,
 	getObjectiveSection,
 	getSharedToolUseSection,
-	getLogEntrySection,
+	getLogMessageSection,
 	getMcpServersSection,
 	getToolUseGuidelinesSection,
 	getCapabilitiesSection,
@@ -68,7 +68,7 @@ async function generatePrompt(
 
 ${getSharedToolUseSection()}
 
-${getLogEntrySection()}
+${getLogMessageSection()}
 
 ${getToolDescriptionsForMode(
 	mode,

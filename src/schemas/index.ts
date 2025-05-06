@@ -901,11 +901,11 @@ export const toolUsageSchema = z.record(
 export type ToolUsage = z.infer<typeof toolUsageSchema>
 
 /**
- * LogEntryParams
+ * LogMessageParams
  */
 
-export { logLevels, logLevelsSchema, logEntryParamsSchema } from "./log-entry"
-export type { LogEntryParams } from "./log-entry"
+export { logLevels, logLevelsSchema, logMessageParamsSchema } from "./log-message"
+export type { LogMessageParams } from "./log-message"
 
 /**
  * RooCodeEvent
