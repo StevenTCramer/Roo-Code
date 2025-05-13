@@ -3,6 +3,16 @@ $ErrorActionPreference = "Stop"
 # === Version Variables ===
 $nodeVersion = "20.18.1"
 
+function Expand-EnvironmentVariablesRecursively($unexpanded) {
+    $previous = ''
+    $expanded = $unexpanded
+    while($previous -ne $expanded) {
+        $previous = $expanded
+        $expanded = [System.Environment]::ExpandEnvironmentVariables($previous)
+    }
+    return $expanded
+}
+
 Set-Location -Path $PSScriptRoot
 
 try {
@@ -16,9 +26,14 @@ try {
             $env:PATH = "$nvmHome;$env:PATH"
         }
         # Reload environment variables from User and Machine scopes to ensure nvm and node are available in this session
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-        Get-ChildItem Env: | ForEach-Object { $key = $_.Key; ${env:$key} = [System.Environment]::GetEnvironmentVariable($key, "User") }
-        Get-ChildItem Env: | ForEach-Object { $key = $_.Key; ${env:$key} = [System.Environment]::GetEnvironmentVariable($key, "Machine") }
+        $UserEnv = [System.Environment]::GetEnvironmentVariables("User")
+        foreach ($key in $UserEnv.Keys) {
+            ${env:$key} = Expand-EnvironmentVariablesRecursively $UserEnv[$key]
+        }
+        $MachineEnv = [System.Environment]::GetEnvironmentVariables("Machine")
+        foreach ($key in $MachineEnv.Keys) {
+            ${env:$key} = Expand-EnvironmentVariablesRecursively $MachineEnv[$key]
+        }
     }
 
     # Ensure Node.js 20.18.1 via nvm
