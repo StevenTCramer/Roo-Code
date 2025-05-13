@@ -1,5 +1,8 @@
 $ErrorActionPreference = "Stop"
 
+# === Version Variables ===
+$nodeVersion = "20.18.1"
+
 Set-Location -Path $PSScriptRoot
 
 try {
@@ -12,18 +15,22 @@ try {
         if ($nvmHome -and ($env:PATH -notlike "*$nvmHome*")) {
             $env:PATH = "$nvmHome;$env:PATH"
         }
+        # Reload environment variables from User and Machine scopes to ensure nvm and node are available in this session
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        Get-ChildItem Env: | ForEach-Object { $key = $_.Key; ${env:$key} = [System.Environment]::GetEnvironmentVariable($key, "User") }
+        Get-ChildItem Env: | ForEach-Object { $key = $_.Key; ${env:$key} = [System.Environment]::GetEnvironmentVariable($key, "Machine") }
     }
 
     # Ensure Node.js 20.18.1 via nvm
-    if (-not (Get-Command node -ErrorAction SilentlyContinue) -or (node --version) -ne "v20.18.1") {
-        Write-Host "Installing Node.js 20.18.1 via nvm..."
-        nvm install 20.18.1
-        nvm use 20.18.1
+    if (-not (Get-Command node -ErrorAction SilentlyContinue) -or (node --version) -ne "v$nodeVersion") {
+        Write-Host "Installing Node.js $nodeVersion via nvm..."
+        nvm install $nodeVersion
+        nvm use $nodeVersion
     }
 
     # Verify Node.js version
-    if ((node --version) -ne "v20.18.1") {
-        Write-Error "Node.js version 20.18.1 is required. Current version: $(node --version)"
+    if ((node --version) -ne "v$nodeVersion") {
+        Write-Error "Node.js version $nodeVersion is required. Current version: $(node --version)"
         exit 1
     }
 
