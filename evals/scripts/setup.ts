@@ -3,6 +3,7 @@ import fs from "fs"
 import inquirer from "inquirer"
 import { spawnSync } from "cross-spawn"
 import axios from "axios"
+import path from "path"
 
 function getOS(): "macOS" | "Linux" | "Windows" {
 	const platform = os.platform()
@@ -161,7 +162,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			}
 		}
 		for (const tool of tools) {
-			spawnSync("asdf", ["plugin", "add", tool.plugin, runtime.url], { stdio: "inherit" })
+			spawnSync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
 		}
 		if (selected.some((s) => s.includes("python"))) {
 			spawnSync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
@@ -225,6 +226,62 @@ function installVSCodeExtensions(): void {
 	console.log("✅ VS Code extensions installed")
 }
 
+async function setupRepository(): Promise<void> {
+	const repoPath = path.resolve(__dirname, "..", "..", "..", "evals")
+	const repoUrl = "https://github.com/cte/evals.git"
+	const repoUpstream = "cte/evals"
+
+	console.log(`Checking for cte/evals repository at ${repoPath}...`)
+
+	try {
+		fs.accessSync(path.join(repoPath, ".git"))
+		console.log(`Repository found at ${repoPath}. Updating...`)
+		spawnSync("git", ["-C", repoPath, "pull"], { stdio: "inherit" })
+		console.log("✅ Repository updated")
+	} catch {
+		console.log(`Repository not found at ${repoPath}.`)
+		const { cloneRepo } = await inquirer.prompt([
+			{
+				type: "confirm",
+				name: "cloneRepo",
+				message: `Clone cte/evals benchmark tests from ${repoUrl}?`,
+				default: true,
+			},
+		])
+
+		if (!cloneRepo) {
+			throw new Error("The cte/evals repository is required for benchmark tests.")
+		}
+
+		try {
+			fs.mkdirSync(path.dirname(repoPath), { recursive: true })
+			if (spawnSync("gh", ["--version"]).status === 0) {
+				const { forkRepo } = await inquirer.prompt([
+					{
+						type: "confirm",
+						name: "forkRepo",
+						message: `Fork ${repoUpstream} using GitHub CLI? (Recommended for contributing results)`,
+						default: true,
+					},
+				])
+
+				if (forkRepo) {
+					spawnSync("gh", ["repo", "fork", repoUpstream, "--clone=true", "--", repoPath], {
+						stdio: "inherit",
+					})
+					console.log(`✅ Forked and cloned cte/evals to ${repoPath}`)
+					return
+				}
+			}
+
+			spawnSync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
+			console.log(`✅ Cloned cte/evals to ${repoPath}`)
+		} catch (error) {
+			throw new Error(`Failed to clone cte/evals: ${error.message}`)
+		}
+	}
+}
+
 async function setupEnvironment(): Promise<void> {
 	if (!fs.existsSync("../.env")) {
 		fs.copyFileSync("../.env.sample", "../.env")
@@ -265,6 +322,7 @@ async function main(): Promise<void> {
 	const os = getOS()
 	installPowerShell(os)
 	installPackageManager(os)
+	await setupRepository()
 	const selected = await selectLanguages()
 	installRuntimesAndTools(os, selected)
 	installVSCodeExtensions()
