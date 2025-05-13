@@ -4,10 +4,11 @@ $ErrorActionPreference = "Stop"
 if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
     Write-Host "Installing nvm-windows..."
     winget install CoreyButler.NVMforWindows --silent --accept-package-agreements
-    # Refresh PATH from both Machine and User registry so nvm is available in this session
-    $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
-    $userPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User')
-    $env:PATH = "$machinePath;$userPath;$env:PATH"
+    # Prepend NVM_HOME to PATH so nvm is available in this session
+    $nvmHome = [System.Environment]::GetEnvironmentVariable('NVM_HOME', 'User')
+    if ($nvmHome -and ($env:PATH -notlike "*$nvmHome*")) {
+        $env:PATH = "$nvmHome;$env:PATH"
+    }
 }
 
 # Ensure Node.js 20.18.1 via nvm
