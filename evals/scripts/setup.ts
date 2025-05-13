@@ -1,9 +1,11 @@
 import os from "os"
 import fs from "fs"
+import path from "path"
 import inquirer from "inquirer"
 import { spawnSync } from "cross-spawn"
 import axios from "axios"
-import path from "path"
+import chalk from "chalk"
+import semver from "semver"
 
 function getOS(): "macOS" | "Linux" | "Windows" {
 	const platform = os.platform()
@@ -13,10 +15,15 @@ function getOS(): "macOS" | "Linux" | "Windows" {
 	throw new Error("Unsupported OS")
 }
 
+const logInfo = (message: string) => console.log(chalk.blue(`💡 ${message}`))
+const logSuccess = (message: string) => console.log(chalk.green(`✅ ${message}`))
+const logWarning = (message: string) => console.log(chalk.yellow(`⚠️ ${message}`))
+const logError = (message: string) => console.error(chalk.red(`🚨 ${message}`))
+
 function installPowerShell(os: string): void {
 	if (os === "Windows") return // PowerShell pre-installed on Windows
 	if (spawnSync("pwsh", ["--version"]).status !== 0) {
-		console.log("Installing PowerShell Core...")
+		logInfo("Installing PowerShell Core...")
 		if (os === "macOS") {
 			spawnSync(
 				"/bin/bash",
@@ -37,34 +44,50 @@ function installPowerShell(os: string): void {
 			spawnSync("sudo", ["apt-get", "install", "-y", "powershell"], { stdio: "inherit" })
 			spawnSync("rm", ["packages-microsoft-prod.deb"], { stdio: "inherit" })
 		}
+		logSuccess("PowerShell Core installed")
+	} else {
+		logSuccess("PowerShell Core already installed")
 	}
 }
 
 function installPackageManager(os: string): void {
 	if (os === "macOS" && spawnSync("brew", ["--version"]).status !== 0) {
+		logInfo("Installing Homebrew...")
 		spawnSync(
 			"/bin/bash",
 			["-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"],
 			{ stdio: "inherit" },
 		)
+		logSuccess("Homebrew installed")
 	} else if (os === "Linux") {
-		spawnSync("sudo", ["apt", "update"], { stdio: "inherit" })
-		spawnSync("sudo", ["apt", "install", "-y", "curl", "git"], { stdio: "inherit" })
+		if (spawnSync("apt", ["--version"]).status !== 0) {
+			logWarning("apt not found; please ensure a compatible package manager is installed")
+		} else {
+			logInfo("Updating apt...")
+			spawnSync("sudo", ["apt", "update"], { stdio: "inherit" })
+			spawnSync("sudo", ["apt", "install", "-y", "curl", "git"], { stdio: "inherit" })
+			logSuccess("apt updated and prerequisites installed")
+		}
 	} else if (os === "Windows" && spawnSync("winget", ["--version"]).status !== 0) {
+		logInfo("Installing winget...")
 		spawnSync(
 			"powershell",
 			["Add-AppxPackage", "-RegisterByFamilyName", "-MainPackage", "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"],
 			{ stdio: "inherit", shell: true },
 		)
+		logSuccess("winget installed")
+	} else {
+		logSuccess("Package manager already installed")
 	}
 }
 
 function installAsdf(os: string): boolean {
 	if (os === "Windows") {
-		console.log("Using winget for Windows runtime management.")
+		logInfo("Using winget for Windows runtime management.")
 		return false
 	}
 	if (spawnSync("asdf", ["--version"]).status !== 0) {
+		logInfo("Installing asdf...")
 		if (os === "macOS") {
 			spawnSync("brew", ["install", "asdf"], { stdio: "inherit" })
 		} else if (os === "Linux") {
@@ -82,6 +105,9 @@ function installAsdf(os: string): boolean {
 		) {
 			fs.appendFileSync(`${os.homedir()}/${shellConfig}`, `\n${asdfLine}\n`)
 		}
+		logSuccess("asdf installed")
+	} else {
+		logSuccess("asdf already installed")
 	}
 	return true
 }
@@ -95,9 +121,14 @@ async function selectLanguages(): Promise<string[]> {
 		{ name: "Java (openjdk-17)", value: "java openjdk-17", checked: true },
 		{ name: ".NET (8.0.401)", value: "dotnet 8.0.401", checked: true },
 	]
+	logInfo("Select eval languages:")
 	const { selected } = await inquirer.prompt([
 		{ type: "checkbox", name: "selected", message: "Select eval types:", choices },
 	])
+	if (!selected || selected.length === 0) {
+		logError("No languages selected. Exiting.")
+		process.exit(1)
+	}
 	if (getOS() !== "Windows") {
 		fs.writeFileSync("../.tool-versions", selected.join("\n") + "\n")
 	} else {
@@ -110,7 +141,27 @@ async function selectLanguages(): Promise<string[]> {
 			),
 		)
 	}
+	logSuccess(`Selected languages: ${selected.map((s) => s.split(" ")[0]).join(", ")}`)
 	return selected
+}
+
+function getCommandOutput(command: string, args: string[] = []): string | null {
+	const result = spawnSync(command, args, { encoding: "utf8", shell: getOS() === "Windows" })
+	if (result.status !== 0) {
+		return null
+	}
+	return result.stdout.trim()
+}
+
+function checkVersion(output: string | null, requiredVersion: string): boolean {
+	if (!output) return false
+	try {
+		const cleanOutput = output.replace(/^(v|python |go |rustc |java )/, "").split(" ")[0]
+		return semver.satisfies(cleanOutput, requiredVersion)
+	} catch {
+		logWarning(`Could not parse version: ${output}. Assuming mismatch.`)
+		return false
+	}
 }
 
 function installRuntimesAndTools(os: string, selected: string[]): void {
@@ -118,31 +169,41 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "python",
 			winget: "Python.Python.3.13",
-			version: "3.13.2",
+			version: ">=3.13.2",
+			checkCmd: os === "Windows" ? "python" : "python3",
+			checkArgs: ["--version"],
 			url: "https://github.com/danhper/asdf-python.git",
 		},
 		{
 			plugin: "golang",
 			winget: "GoLang.Go",
-			version: "1.24.2",
+			version: ">=1.24.2",
+			checkCmd: "go",
+			checkArgs: ["version"],
 			url: "https://github.com/asdf-community/asdf-golang.git",
 		},
 		{
 			plugin: "rust",
 			winget: "Rustlang.Rust",
-			version: "1.85.1",
+			version: ">=1.85.1",
+			checkCmd: "rustc",
+			checkArgs: ["--version"],
 			url: "https://github.com/asdf-community/asdf-rust.git",
 		},
 		{
 			plugin: "java",
 			winget: "EclipseAdoptium.Temurin.17.JDK",
-			version: "openjdk-17",
+			version: ">=17",
+			checkCmd: "javac",
+			checkArgs: ["-version"],
 			url: "https://github.com/halcyon/asdf-java.git",
 		},
 		{
 			plugin: "dotnet",
 			winget: "Microsoft.DotNet.SDK.8",
-			version: "8.0.401",
+			version: ">=8.0.401",
+			checkCmd: "dotnet",
+			checkArgs: ["--version"],
 			url: "https://github.com/hensou/asdf-dotnet.git",
 		},
 	]
@@ -151,66 +212,158 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			plugin: "pnpm",
 			winget: "pnpm.pnpm",
 			version: "latest",
+			checkCmd: "pnpm",
+			checkArgs: ["--version"],
 			url: "https://github.com/jonathanmorley/asdf-pnpm.git",
 		},
-		{ plugin: "gh", winget: "GitHub.cli", version: "latest", url: "https://github.com/younke/asdf-gh.git" },
+		{
+			plugin: "gh",
+			winget: "GitHub.cli",
+			version: "latest",
+			checkCmd: "gh",
+			checkArgs: ["--version"],
+			url: "https://github.com/younke/asdf-gh.git",
+		},
 	]
+
+	logInfo("Installing runtimes and tools...")
 	if (os !== "Windows" && installAsdf(os)) {
 		for (const runtime of runtimes) {
 			if (selected.some((s) => s.includes(runtime.plugin))) {
+				const versionOutput = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
+				if (versionOutput && checkVersion(versionOutput, runtime.version)) {
+					logSuccess(`${runtime.plugin} already installed with compatible version (${versionOutput})`)
+					continue
+				}
+				logInfo(`Installing ${runtime.plugin} via asdf...`)
 				spawnSync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
+				spawnSync("asdf", ["install", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
+				spawnSync("asdf", ["global", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
+				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
+				if (newVersion && checkVersion(newVersion, runtime.version)) {
+					logSuccess(`${runtime.plugin} installed (${newVersion})`)
+				} else {
+					logError(`${runtime.plugin} installation failed or version incorrect`)
+					process.exit(1)
+				}
 			}
 		}
 		for (const tool of tools) {
+			const versionOutput = getCommandOutput(tool.checkCmd, tool.checkArgs)
+			if (versionOutput) {
+				logSuccess(`${tool.plugin} already installed (${versionOutput})`)
+				continue
+			}
+			logInfo(`Installing ${tool.plugin} via asdf...`)
 			spawnSync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
+			spawnSync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+			spawnSync("asdf", ["global", tool.plugin, tool.version], { stdio: "inherit" })
+			logSuccess(`${tool.plugin} installed`)
 		}
 		if (selected.some((s) => s.includes("python"))) {
-			spawnSync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
-				stdio: "inherit",
-			})
+			const uvVersion = getCommandOutput("uv", ["--version"])
+			if (uvVersion) {
+				logSuccess(`uv already installed (${uvVersion})`)
+			} else {
+				logInfo("Installing uv via asdf...")
+				spawnSync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
+					stdio: "inherit",
+				})
+				spawnSync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+				spawnSync("asdf", ["global", "uv", "latest"], { stdio: "inherit" })
+				logSuccess("uv installed")
+			}
+			const venvPath = path.resolve(__dirname, "..", ".venv")
+			if (!fs.existsSync(venvPath)) {
+				logInfo(`Creating Python virtual environment at ${venvPath}...`)
+				spawnSync("uv", ["venv", venvPath], { stdio: "inherit" })
+				logSuccess(`Virtual environment created at ${venvPath}`)
+				logInfo(
+					`Activate it using: source ${path.join(venvPath, os === "Windows" ? "Scripts" : "bin", "activate")}`,
+				)
+			} else {
+				logSuccess(`Virtual environment already exists at ${venvPath}`)
+			}
 		}
-		spawnSync("asdf", ["install"], { stdio: "inherit" })
-		spawnSync("asdf", ["global", ...selected.map((s) => s.split(" ")[0])], { stdio: "inherit" })
 	} else {
 		for (const runtime of runtimes) {
 			if (selected.some((s) => s.includes(runtime.plugin))) {
+				const versionOutput = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
+				if (versionOutput && checkVersion(versionOutput, runtime.version)) {
+					logSuccess(`${runtime.plugin} already installed with compatible version (${versionOutput})`)
+					continue
+				}
+				logInfo(`Installing ${runtime.plugin} via winget...`)
 				const result = spawnSync(
 					"winget",
 					[
 						"install",
 						runtime.winget,
 						"--version",
-						runtime.version,
+						runtime.version.replace(/>=/, ""),
 						"--silent",
 						"--accept-package-agreements",
 					],
 					{ stdio: "inherit", shell: true },
 				)
 				if (result.status !== 0) {
-					console.log(`⚠️ ${runtime.plugin} version ${runtime.version} not found. Installing latest...`)
+					logWarning(`${runtime.plugin} version ${runtime.version} not found. Installing latest...`)
 					spawnSync("winget", ["install", runtime.winget, "--silent", "--accept-package-agreements"], {
 						stdio: "inherit",
 						shell: true,
 					})
 				}
+				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
+				if (newVersion && checkVersion(newVersion, runtime.version)) {
+					logSuccess(`${runtime.plugin} installed (${newVersion})`)
+				} else {
+					logError(`${runtime.plugin} installation failed or version incorrect`)
+					process.exit(1)
+				}
 			}
 		}
 		for (const tool of tools) {
+			const versionOutput = getCommandOutput(tool.checkCmd, tool.checkArgs)
+			if (versionOutput) {
+				logSuccess(`${tool.plugin} already installed (${versionOutput})`)
+				continue
+			}
+			logInfo(`Installing ${tool.plugin} via winget...`)
 			spawnSync("winget", ["install", tool.winget, "--silent", "--accept-package-agreements"], {
 				stdio: "inherit",
 				shell: true,
 			})
+			logSuccess(`${tool.plugin} installed`)
 		}
 		if (selected.some((s) => s.includes("python"))) {
-			console.log("Installing uv via pip...")
-			spawnSync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
+			const uvVersion = getCommandOutput("uv", ["--version"])
+			if (uvVersion) {
+				logSuccess(`uv already installed (${uvVersion})`)
+			} else {
+				logInfo("Installing uv via pip...")
+				spawnSync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
+				logSuccess("uv installed")
+			}
+			const venvPath = path.resolve(__dirname, "..", ".venv")
+			if (!fs.existsSync(venvPath)) {
+				logInfo(`Creating Python virtual environment at ${venvPath}...`)
+				spawnSync("uv", ["venv", venvPath], { stdio: "inherit" })
+				logSuccess(`Virtual environment created at ${venvPath}`)
+				logInfo(
+					`Activate it using: .\\${path.relative(path.resolve(__dirname, ".."), venvPath)}\\Scripts\\activate`,
+				)
+			} else {
+				logSuccess(`Virtual environment already exists at ${venvPath}`)
+			}
 		}
 	}
 }
 
 function installVSCodeExtensions(): void {
+	logInfo("Installing VS Code extensions...")
 	if (spawnSync("code", ["--version"]).status !== 0) {
-		throw new Error("VS Code CLI not found. Please install Visual Studio Code.")
+		logError("VS Code CLI not found. Please install Visual Studio Code.")
+		process.exit(1)
 	}
 	const extensions = [
 		"golang.go",
@@ -223,7 +376,7 @@ function installVSCodeExtensions(): void {
 	for (const ext of extensions) {
 		spawnSync("code", ["--install-extension", ext], { stdio: "inherit" })
 	}
-	console.log("✅ VS Code extensions installed")
+	logSuccess("VS Code extensions installed")
 }
 
 async function setupRepository(): Promise<void> {
@@ -231,15 +384,15 @@ async function setupRepository(): Promise<void> {
 	const repoUrl = "https://github.com/cte/evals.git"
 	const repoUpstream = "cte/evals"
 
-	console.log(`Checking for cte/evals repository at ${repoPath}...`)
+	logInfo(`Checking for cte/evals repository at ${repoPath}...`)
 
 	try {
 		fs.accessSync(path.join(repoPath, ".git"))
-		console.log(`Repository found at ${repoPath}. Updating...`)
+		logSuccess(`Repository found at ${repoPath}. Updating...`)
 		spawnSync("git", ["-C", repoPath, "pull"], { stdio: "inherit" })
-		console.log("✅ Repository updated")
+		logSuccess("Repository updated")
 	} catch {
-		console.log(`Repository not found at ${repoPath}.`)
+		logWarning(`Repository not found at ${repoPath}.`)
 		const { cloneRepo } = await inquirer.prompt([
 			{
 				type: "confirm",
@@ -250,7 +403,8 @@ async function setupRepository(): Promise<void> {
 		])
 
 		if (!cloneRepo) {
-			throw new Error("The cte/evals repository is required for benchmark tests.")
+			logError("The cte/evals repository is required for benchmark tests.")
+			process.exit(1)
 		}
 
 		try {
@@ -269,22 +423,25 @@ async function setupRepository(): Promise<void> {
 					spawnSync("gh", ["repo", "fork", repoUpstream, "--clone=true", "--", repoPath], {
 						stdio: "inherit",
 					})
-					console.log(`✅ Forked and cloned cte/evals to ${repoPath}`)
+					logSuccess(`Forked and cloned cte/evals to ${repoPath}`)
 					return
 				}
 			}
 
 			spawnSync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
-			console.log(`✅ Cloned cte/evals to ${repoPath}`)
+			logSuccess(`Cloned cte/evals to ${repoPath}`)
 		} catch (error) {
-			throw new Error(`Failed to clone cte/evals: ${error.message}`)
+			logError(`Failed to clone cte/evals: ${error.message}`)
+			process.exit(1)
 		}
 	}
 }
 
 async function setupEnvironment(): Promise<void> {
+	logInfo("Setting up environment...")
 	if (!fs.existsSync("../.env")) {
 		fs.copyFileSync("../.env.sample", "../.env")
+		logSuccess("Copied .env.sample to .env")
 	}
 	if (!fs.readFileSync("../.env", "utf8").includes("OPENROUTER_API_KEY")) {
 		const { key } = await inquirer.prompt([
@@ -292,19 +449,30 @@ async function setupEnvironment(): Promise<void> {
 		])
 		await axios.get("https://openrouter.ai/api/v1/key", { headers: { Authorization: `Bearer ${key}` } })
 		fs.appendFileSync("../.env", `OPENROUTER_API_KEY=${key}\n`)
+		logSuccess("OpenRouter API key added to .env")
+	} else {
+		logSuccess("OpenRouter API key already set in .env")
 	}
 }
 
 async function setupDatabaseAndWeb(): Promise<void> {
+	logInfo("Setting up database...")
+	const dataDir = path.resolve(__dirname, "..", "data")
+	fs.mkdirSync(dataDir, { recursive: true })
+	logSuccess(`Ensured data directory exists at ${dataDir}`)
 	spawnSync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
 	spawnSync("pnpm", ["--filter", "@evals/db", "db:enable-wal"], { stdio: "inherit" })
+	logSuccess("Database synced")
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
+		logInfo("Starting evals web app...")
 		spawnSync("pnpm", ["web"], { stdio: "inherit" })
+		logSuccess("Evals web app started")
 	}
 }
 
 async function buildExtension(): Promise<void> {
+	logInfo("Building Roo Code extension...")
 	const { build } = await inquirer.prompt([{ type: "confirm", name: "build", message: "Build Roo Code extension?" }])
 	if (build) {
 		process.chdir("..")
@@ -315,10 +483,14 @@ async function buildExtension(): Promise<void> {
 		spawnSync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		spawnSync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		process.chdir("evals")
+		logSuccess("Roo Code extension built and installed")
+	} else {
+		logInfo("Skipped building Roo Code extension")
 	}
 }
 
 async function main(): Promise<void> {
+	logInfo("Starting Roo Code Evals Setup...")
 	const os = getOS()
 	installPowerShell(os)
 	installPackageManager(os)
@@ -329,10 +501,10 @@ async function main(): Promise<void> {
 	await setupEnvironment()
 	await setupDatabaseAndWeb()
 	await buildExtension()
-	console.log("🚀 Setup complete!")
+	logSuccess("Setup complete!")
 }
 
 main().catch((err) => {
-	console.error("❌ Error:", err.message)
+	logError(`Setup failed: ${err.message}`)
 	process.exit(1)
 })
