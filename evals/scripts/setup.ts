@@ -497,7 +497,7 @@ async function setupEnvironment(): Promise<void> {
 	}
 }
 
-async function setupDatabaseAndWeb(): Promise<void> {
+async function setupDatabase(): Promise<void> {
 	logInfo("Setting up database...")
 	const dataDir = path.resolve(__dirname, "..", "data")
 	fs.mkdirSync(dataDir, { recursive: true })
@@ -521,6 +521,9 @@ async function setupDatabaseAndWeb(): Promise<void> {
 	}
 
 	logSuccess("Database synced")
+}
+
+async function startWebApp(): Promise<void> {
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
 		logInfo("Starting evals web app...")
@@ -557,7 +560,8 @@ async function main(): Promise<void> {
 	installRuntimesAndTools(os, selected)
 	installVSCodeExtensions()
 	await setupEnvironment()
-	await setupDatabaseAndWeb()
+	await setupDatabase()
+	await startWebApp()
 	await buildExtension()
 	logSuccess("Setup complete!")
 }
