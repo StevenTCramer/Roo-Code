@@ -330,12 +330,26 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		for (const runtime of runtimes) {
 			if (selected.some((s) => s.includes(runtime.plugin))) {
 				const versionOutput = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
-				if (versionOutput && checkVersion(versionOutput, runtime.version)) {
-					logSuccess(`${runtime.plugin} already installed with compatible version (${versionOutput})`)
-					continue
-				}
-				if (versionOutput && !checkVersion(versionOutput, runtime.version)) {
-					logWarning(`${runtime.plugin} found, but version is not compatible: (${versionOutput})`)
+				if (versionOutput) {
+					// Try to extract the version number from output like "Python 3.13.3"
+					let foundVersion = versionOutput
+					const match = versionOutput.match(/(\d+\.\d+\.\d+)/)
+					if (match) {
+						foundVersion = match[1]
+					}
+					logInfo(`${runtime.plugin} detected version: ${foundVersion}`)
+					if (semver.satisfies(foundVersion, runtime.version)) {
+						logSuccess(`${runtime.plugin} already installed with compatible version (${foundVersion})`)
+						continue
+					} else {
+						logWarning(
+							`${runtime.plugin} found, but version ${foundVersion} is not compatible (required: ${runtime.version}). Installing required version...`,
+						)
+					}
+				} else {
+					logWarning(
+						`${runtime.plugin} not found or version could not be determined. Proceeding with installation...`,
+					)
 				}
 				logInfo(`Installing ${runtime.plugin} via winget...`)
 				const result = spawn.sync(
