@@ -193,8 +193,12 @@ function getCommandOutput(command: string, args: string[] = []): string | null {
 function checkVersion(output: string | null, requiredVersion: string): boolean {
 	if (!output) return false
 	try {
-		const cleanOutput = output.replace(/^(v|python |go |rustc |java )/, "").split(" ")[0]
-		return semver.satisfies(cleanOutput, requiredVersion)
+		const cleanOutput = semver.coerce(output)
+		if (!cleanOutput) {
+			logWarning(`Could not coerce version: ${output}. Assuming mismatch.`)
+			return false
+		}
+		return semver.satisfies(cleanOutput.version, requiredVersion)
 	} catch {
 		logWarning(`Could not parse version: ${output}. Assuming mismatch.`)
 		return false
