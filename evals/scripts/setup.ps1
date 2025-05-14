@@ -54,6 +54,10 @@ try {
         Write-Host "Installing pnpm..."
         npm install -g pnpm
     }
+    
+    # Always install dependencies
+    Write-Host "Installing dependencies with pnpm install..."
+    pnpm install --filter evals-setup
 
     # Run TypeScript setup from evals/scripts/
     Write-Host "Running setup script..."
