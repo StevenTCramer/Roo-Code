@@ -40,3 +40,5 @@ yarn-error.log*
 
 # Evals
 evals
+# Data and logs
+data/
