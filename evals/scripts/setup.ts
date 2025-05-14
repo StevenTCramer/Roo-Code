@@ -385,7 +385,6 @@ function installVSCodeExtensions(): void {
 async function setupRepository(): Promise<void> {
 	const repoPath = path.resolve(__dirname, "..", "..", "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
-	const repoUpstream = "cte/evals"
 
 	logInfo(`Checking for cte/evals repository at ${repoPath}...`)
 
@@ -396,41 +395,8 @@ async function setupRepository(): Promise<void> {
 		logSuccess("Repository updated")
 	} catch {
 		logWarning(`Repository not found at ${repoPath}.`)
-		const { cloneRepo } = await inquirer.prompt([
-			{
-				type: "confirm",
-				name: "cloneRepo",
-				message: `Clone cte/evals benchmark tests from ${repoUrl}?`,
-				default: true,
-			},
-		])
-
-		if (!cloneRepo) {
-			logError("The cte/evals repository is required for benchmark tests.")
-			process.exit(1)
-		}
-
 		try {
 			fs.mkdirSync(path.dirname(repoPath), { recursive: true })
-			if (spawn.sync("gh", ["--version"]).status === 0) {
-				const { forkRepo } = await inquirer.prompt([
-					{
-						type: "confirm",
-						name: "forkRepo",
-						message: `Fork ${repoUpstream} using GitHub CLI? (Recommended for contributing results)`,
-						default: true,
-					},
-				])
-
-				if (forkRepo) {
-					spawn.sync("gh", ["repo", "fork", repoUpstream, "--clone=true", "--", repoPath], {
-						stdio: "inherit",
-					})
-					logSuccess(`Forked and cloned cte/evals to ${repoPath}`)
-					return
-				}
-			}
-
 			spawn.sync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
 			logSuccess(`Cloned cte/evals to ${repoPath}`)
 		} catch (error) {
