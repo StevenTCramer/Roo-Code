@@ -371,8 +371,8 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 						shell: true,
 					})
 				}
-				// If installing python on Windows, update PATH for this process
-				if (runtime.plugin === "python" && getOS() === "Windows") {
+				// Always refresh PATH from registry after a runtime install on Windows
+				if (getOS() === "Windows") {
 					refreshProcessEnvPathFromRegistry()
 				}
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
@@ -399,6 +399,10 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				stdio: "inherit",
 				shell: true,
 			})
+			// Always refresh PATH from registry after a tool install on Windows
+			if (getOS() === "Windows") {
+				refreshProcessEnvPathFromRegistry()
+			}
 			logSuccess(`${tool.plugin} installed`)
 		}
 		if (selected.some((s) => s.includes("python"))) {
