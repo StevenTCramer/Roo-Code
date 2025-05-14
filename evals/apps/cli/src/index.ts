@@ -1,11 +1,34 @@
+console.log("***** CLI STARTED: If you see this, stdout is working *****")
 import * as fs from "fs"
 import * as path from "path"
 import * as os from "os"
 
 import pMap from "p-map"
+// Set up log file location: evals/logs/test-run-<timestamp>.log
+const logsDir = path.resolve(__dirname, "../../logs")
+if (!fs.existsSync(logsDir)) {
+	fs.mkdirSync(logsDir, { recursive: true })
+}
+const timestamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 15)
+const defaultLogFile = path.join(logsDir, `test-run-${timestamp}.log`)
+const LOG_FILE_PATH = process.env.TEST_LOG_FILE || defaultLogFile
+// Helper to log to both console and file
 import pWaitFor from "p-wait-for"
 import { execa, parseCommandString } from "execa"
 import { build, filesystem, GluegunPrompt, GluegunToolbox } from "gluegun"
+// Helper to log to both console and file
+function logToConsoleAndFile(message: string, isError = false) {
+	try {
+		fs.appendFileSync(LOG_FILE_PATH, message + "\n")
+	} catch (e) {
+		console.error("Failed to write to log file:", e)
+	}
+	if (isError) {
+		console.error(message)
+	} else {
+		console.log(message)
+	}
+}
 import psTree from "ps-tree"
 
 import {
@@ -45,9 +68,30 @@ const UNIT_TEST_TIMEOUT = 2 * 60 * 1_000
 
 const testCommands: Record<ExerciseLanguage, { commands: string[]; timeout?: number; cwd?: string }> = {
 	go: { commands: ["go test"] }, // timeout 15s bash -c "cd '$dir' && go test > /dev/null 2>&1"
-	java: { commands: ["./gradlew test"] }, // timeout --foreground 15s bash -c "cd '$dir' && ./gradlew test > /dev/null 2>&1"
+	java: {
+		commands: [
+			(() => {
+				const platform = os.platform()
+				const command = platform === "win32" ? "gradlew.bat test" : "./gradlew test"
+				console.log(
+					`${Date.now()} [cli#testCommands] Generated Java command: "${command}" (platform: ${platform})`,
+				)
+				return command
+			})(),
+		],
+	}, // timeout --foreground 15s bash -c "cd '$dir' && ./gradlew test > /dev/null 2>&1"
 	javascript: { commands: ["pnpm install", "pnpm test"] }, // timeout 15s bash -c "cd '$dir' && pnpm install >/dev/null 2>&1 && pnpm test >/dev/null 2>&1"
-	python: { commands: ["uv run python3 -m pytest -o markers=task *_test.py"] }, // timeout 15s bash -c "cd '$dir' && uv run python3 -m pytest -o markers=task *_test.py"
+	python: {
+		commands: [
+			// Use python on Windows, python3 on other platforms
+			(() => {
+				const platform = os.platform()
+				const command = `uv run ${platform === "win32" ? "python" : "python3"} -m pytest -o markers=task .`
+				console.log(`${Date.now()} [cli#testCommands] Generated command: "${command}" (platform: ${platform})`)
+				return command
+			})(),
+		],
+	}, // timeout 15s bash -c "cd '$dir' && uv run python3 -m pytest -o markers=task *_test.py"
 	rust: { commands: ["cargo test"] }, // timeout 15s bash -c "cd '$dir' && cargo test > /dev/null 2>&1"
 }
 
@@ -176,7 +220,15 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 	const prompt = fs.readFileSync(path.resolve(exercisesPath, `prompts/${language}.md`), "utf-8")
 	const dirname = path.dirname(run.socketPath)
 	const workspacePath = path.resolve(exercisesPath, language, exercise)
-	const taskSocketPath = path.resolve(dirname, `${dirname}/task-${task.id}.sock`)
+	// Ensure socket path is properly formatted for the OS
+	let taskSocketPath
+	if (os.platform() === "win32") {
+		// On Windows, use a pipe name format
+		taskSocketPath = path.join(dirname, `task-${task.id}.sock`)
+	} else {
+		// On Unix systems, use the original format
+		taskSocketPath = path.resolve(dirname, `${dirname}/task-${task.id}.sock`)
+	}
 
 	// If debugging:
 	// Use --wait --log trace or --verbose.
@@ -189,7 +241,7 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 		env: {
 			ROO_CODE_IPC_SOCKET_PATH: taskSocketPath,
 		},
-		shell: "/bin/bash",
+		shell: os.platform() === "win32" ? true : "/bin/bash", // Use appropriate shell based on OS
 	})`code --disable-workspace-trust -n ${workspacePath}`
 
 	// Give VSCode some time to spawn before connecting to its unix socket.
@@ -353,6 +405,20 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 			await new Promise((resolve) => setTimeout(resolve, 2_000))
 		}
 
+		// Pause before disconnecting to allow user to see logs
+		if (process.env.PAUSE_ON_EXIT === "1") {
+			const readline = await import("node:readline")
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+			await new Promise((resolve) => {
+				rl.question("***** Press Enter to close this window and finish the test... *****", () => {
+					rl.close()
+					resolve(void 0)
+				})
+			})
+		}
 		client.disconnect()
 	}
 
@@ -363,15 +429,26 @@ const runUnitTest = async ({ task }: { task: Task }) => {
 	const cmd = testCommands[task.language]
 	const exercisePath = path.resolve(exercisesPath, task.language, task.exercise)
 	const cwd = cmd.cwd ? path.resolve(exercisePath, cmd.cwd) : exercisePath
-	const commands = cmd.commands.map((cs) => parseCommandString(cs))
+	const commands = cmd.commands.map((cs) => {
+		const parsed = parseCommandString(cs)
+		logToConsoleAndFile(
+			`${Date.now()} [cli#runUnitTest] Original command: "${cs}", Parsed command: "${parsed.join(" ")}"`,
+		)
+		return parsed
+	})
 
 	let passed = true
 
 	for (const command of commands) {
 		try {
-			console.log(
+			logToConsoleAndFile(
 				`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] running "${command.join(" ")}"`,
 			)
+			// Log relevant environment variables for debugging (always log)
+			logToConsoleAndFile(`GOCACHE: ${process.env.GOCACHE}`)
+			logToConsoleAndFile(`LocalAppData: ${process.env.LocalAppData}`)
+			logToConsoleAndFile(`LOCALAPPDATA: ${process.env.LOCALAPPDATA}`)
+			logToConsoleAndFile(`Full process.env: ${JSON.stringify(process.env, null, 2)}`)
 
 			const subprocess = execa({ cwd, shell: true, reject: false })`${command}`
 
@@ -386,60 +463,101 @@ const runUnitTest = async ({ task }: { task: Task }) => {
 					})
 				})
 
-				console.log(
+				logToConsoleAndFile(
 					`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] "${command.join(" ")}": unit tests timed out, killing ${subprocess.pid} + ${JSON.stringify(descendants)}`,
 				)
 
 				if (descendants.length > 0) {
 					for (const descendant of descendants) {
 						try {
-							console.log(
+							logToConsoleAndFile(
 								`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] killing ${descendant}`,
 							)
-
-							await execa`kill -9 ${descendant}`
+							if (os.platform() === "win32") {
+								await execa`taskkill /PID ${descendant} /T /F`
+							} else {
+								await execa`kill -9 ${descendant}`
+							}
 						} catch (error) {
-							console.error(
-								`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] Error killing descendant processes:`,
-								error,
+							logToConsoleAndFile(
+								`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] Error killing descendant processes:\n${error}`,
+								true,
 							)
 						}
 					}
 				}
 
-				console.log(
+				logToConsoleAndFile(
 					`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] killing ${subprocess.pid}`,
 				)
 
 				try {
-					await execa`kill -9 ${subprocess.pid!}`
+					if (os.platform() === "win32") {
+						await execa`taskkill /PID ${subprocess.pid!} /T /F`
+					} else {
+						await execa`kill -9 ${subprocess.pid!}`
+					}
 				} catch (error) {
-					console.error(
-						`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] Error killing process:`,
-						error,
+					logToConsoleAndFile(
+						`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] Error killing process:\n${error}`,
+						true,
 					)
 				}
 			}, UNIT_TEST_TIMEOUT)
 
 			const result = await subprocess
 
-			console.log(
+			logToConsoleAndFile(
 				`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] "${command.join(" ")}" result -> ${JSON.stringify(result)}`,
 			)
 
 			clearTimeout(timeout)
 
 			if (result.failed) {
+				logToConsoleAndFile(
+					`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] Command failed: "${command.join(" ")}"\n` +
+						`Exit code: ${result.exitCode}\n` +
+						`stdout:\n${result.stdout}\n` +
+						`stderr:\n${result.stderr}`,
+					true,
+				)
 				passed = false
 				break
+			} else {
+				logToConsoleAndFile(
+					`***** [cli#runUnitTest | ${task.language} / ${task.exercise}] Command succeeded: "${command.join(" ")}" *****\n` +
+						`***** Exit code: ${result.exitCode} *****\n` +
+						`***** stdout:\n${result.stdout}\n` +
+						`***** stderr:\n${result.stderr}\n` +
+						`*****`,
+				)
 			}
 		} catch (error) {
-			console.log(`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}]`, error)
+			logToConsoleAndFile(`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] ${error}`, true)
 			passed = false
 			break
 		}
 	}
 
+	// Pause after all logging so user can review output before window closes
+	if (process.env.PAUSE_ON_EXIT === "1") {
+		const readline = await import("node:readline")
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		})
+		await new Promise<void>((resolve) => {
+			rl.question("***** Press Enter to close this window and finish the test... *****", () => {
+				rl.close()
+				resolve(void 0)
+			})
+		})
+	} else {
+		logToConsoleAndFile(
+			"***** Pausing 10 seconds before closing to allow log review... (set PAUSE_ON_EXIT=1 for keypress) *****",
+		)
+		await new Promise((resolve) => setTimeout(resolve, 10_000))
+	}
 	return passed
 }
 
