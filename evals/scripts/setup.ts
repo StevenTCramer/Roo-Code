@@ -10,6 +10,7 @@ import { fileURLToPath } from "url"
 import { spawnSync } from "child_process"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const EVALS_DIR = path.resolve(__dirname, "..")
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
@@ -527,7 +528,7 @@ async function startWebApp(): Promise<void> {
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
 		logInfo("Starting evals web app...")
-		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit" })
+		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit", cwd: EVALS_DIR })
 		if (result.status === 0) {
 			logSuccess("Evals web app started")
 		} else {
