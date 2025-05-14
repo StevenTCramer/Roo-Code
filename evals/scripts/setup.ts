@@ -502,8 +502,19 @@ async function setupDatabaseAndWeb(): Promise<void> {
 	const dataDir = path.resolve(__dirname, "..", "data")
 	fs.mkdirSync(dataDir, { recursive: true })
 	logSuccess(`Ensured data directory exists at ${dataDir}`)
-	spawn.sync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
-	spawn.sync("pnpm", ["--filter", "@evals/db", "db:enable-wal"], { stdio: "inherit" })
+
+	const dbPush = spawn.sync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
+	if (dbPush.status !== 0) {
+		logError("Database push failed. See above for details.")
+		process.exit(1)
+	}
+
+	const dbEnableWal = spawn.sync("pnpm", ["--filter", "@evals/db", "db:enable-wal"], { stdio: "inherit" })
+	if (dbEnableWal.status !== 0) {
+		logError("Enabling WAL mode failed. See above for details.")
+		process.exit(1)
+	}
+
 	logSuccess("Database synced")
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
