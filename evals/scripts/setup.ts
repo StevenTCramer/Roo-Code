@@ -334,6 +334,9 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					logSuccess(`${runtime.plugin} already installed with compatible version (${versionOutput})`)
 					continue
 				}
+				if (versionOutput && !checkVersion(versionOutput, runtime.version)) {
+					logWarning(`${runtime.plugin} found, but version is not compatible: (${versionOutput})`)
+				}
 				logInfo(`Installing ${runtime.plugin} via winget...`)
 				const result = spawn.sync(
 					"winget",
