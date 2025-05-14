@@ -480,13 +480,38 @@ async function setupRepository(): Promise<void> {
 	}
 }
 
-async function setupEnvironment(): Promise<void> {
+async function ensureEnvFileExists(): Promise<void> {
 	logInfo("Setting up environment...")
 	if (!fs.existsSync("../.env")) {
 		fs.copyFileSync("../.env.sample", "../.env")
 		logSuccess("Copied .env.sample to .env")
 	}
-	if (!fs.readFileSync("../.env", "utf8").includes("OPENROUTER_API_KEY")) {
+}
+
+function checkGoCacheEnv(selectedLangs: string[]): void {
+	const envPath = "../.env"
+	const envContent = fs.readFileSync(envPath, "utf8")
+	if (selectedLangs.some((lang) => lang.includes("golang"))) {
+		const goCacheMatch = envContent.match(/^GOCACHE=(.*)/m)
+		if (!goCacheMatch || !goCacheMatch[1]?.trim()) {
+			const goCacheValue = getCommandOutput("go", ["env", "GOCACHE"])
+			if (goCacheValue && goCacheValue.trim()) {
+				fs.appendFileSync(envPath, `GOCACHE=${goCacheValue.trim()}\n`)
+				logSuccess(`GOCACHE was detected and added to .env: ${goCacheValue.trim()}`)
+			} else {
+				logWarning("GOCACHE is not set in your .env file. Go evals require GOCACHE to be set, e.g.:")
+				logInfo("Add this line to your .env file (update the path if needed):")
+				logInfo("GOCACHE=C:\\Users\\YOUR_USER\\AppData\\Local\\go-build")
+			}
+		} else {
+			logSuccess(`GOCACHE is set in .env: ${goCacheMatch[1].trim()}`)
+		}
+	}
+}
+
+async function ensureOpenRouterApiKey(): Promise<void> {
+	const envContent = fs.readFileSync("../.env", "utf8")
+	if (!envContent.includes("OPENROUTER_API_KEY")) {
 		const { key } = await inquirer.prompt([
 			{ type: "input", name: "key", message: "Enter OpenRouter API key (sk-or-v1-...):" },
 		])
@@ -496,6 +521,12 @@ async function setupEnvironment(): Promise<void> {
 	} else {
 		logSuccess("OpenRouter API key already set in .env")
 	}
+}
+
+async function setupEnvironment(selectedLangs: string[]): Promise<void> {
+	await ensureEnvFileExists()
+	checkGoCacheEnv(selectedLangs)
+	await ensureOpenRouterApiKey()
 }
 
 async function setupDatabase(): Promise<void> {
@@ -565,7 +596,7 @@ async function main(): Promise<void> {
 	installRuntimesAndTools(os, selected)
 	await buildExtension()
 	installVSCodeExtensions()
-	await setupEnvironment()
+	await setupEnvironment(selected)
 	await setupDatabase()
 	await startWebApp()
 	logSuccess("Setup complete!")
