@@ -7,12 +7,12 @@ import axios from "axios"
 import chalk from "chalk"
 import * as semver from "semver"
 import { fileURLToPath } from "url"
+import { spawnSync } from "child_process"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
-	const { spawnSync } = require("child_process")
 	let newPath = ""
 	// Try user and system PATH
 	const queries = [
