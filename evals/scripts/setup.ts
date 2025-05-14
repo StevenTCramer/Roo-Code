@@ -246,7 +246,11 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
 				} else {
-					logError(`${runtime.plugin} installation failed or version incorrect`)
+					if (!newVersion) {
+						logError(`${runtime.plugin} installation failed: not found or not installed`)
+					} else {
+						logError(`${runtime.plugin} version mismatch: found ${newVersion}, expected ${runtime.version}`)
+					}
 					process.exit(1)
 				}
 			}
@@ -320,7 +324,11 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
 				} else {
-					logError(`${runtime.plugin} installation failed or version incorrect`)
+					if (!newVersion) {
+						logError(`${runtime.plugin} installation failed: not found or not installed`)
+					} else {
+						logError(`${runtime.plugin} version mismatch: found ${newVersion}, expected ${runtime.version}`)
+					}
 					process.exit(1)
 				}
 			}
