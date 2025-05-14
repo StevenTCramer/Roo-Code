@@ -9,6 +9,40 @@ import * as semver from "semver"
 import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+// Helper: Refresh process.env.PATH from Windows registry after winget install
+function refreshProcessEnvPathFromRegistry() {
+	if (getOS() !== "Windows") return
+	const { spawnSync } = require("child_process")
+	let newPath = ""
+	// Try user and system PATH
+	const queries = [
+		["HKCU\\Environment", "Path"],
+		["HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment", "Path"],
+	]
+	for (const [key, value] of queries) {
+		const reg = spawnSync("reg", ["query", key, "/v", value], { encoding: "utf8" })
+		if (reg.status === 0 && reg.stdout) {
+			const match = reg.stdout.match(/Path\s+REG_\w+\s+([^\r\n]+)/i)
+			if (match && match[1]) {
+				newPath += match[1] + ";"
+			}
+		}
+	}
+	if (newPath) {
+		process.env.PATH = newPath + process.env.PATH
+		console.log(
+			chalk.blue(
+				"💡 Refreshed process.env.PATH from registry after winget install. If issues persist, restart your terminal.",
+			),
+		)
+	} else {
+		console.log(
+			chalk.yellow(
+				"⚠️  Could not refresh PATH from registry. If Python is installed but not found, try restarting your terminal.",
+			),
+		)
+	}
+}
 
 function getOS(): "macOS" | "Linux" | "Windows" {
 	const platform = os.platform()
@@ -319,6 +353,10 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 						stdio: "inherit",
 						shell: true,
 					})
+				}
+				// If installing python on Windows, update PATH for this process
+				if (runtime.plugin === "python" && getOS() === "Windows") {
+					refreshProcessEnvPathFromRegistry()
 				}
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
