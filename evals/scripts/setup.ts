@@ -527,8 +527,12 @@ async function startWebApp(): Promise<void> {
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
 		logInfo("Starting evals web app...")
-		spawn.sync("pnpm", ["web"], { stdio: "inherit" })
-		logSuccess("Evals web app started")
+		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit" })
+		if (result.status === 0) {
+			logSuccess("Evals web app started")
+		} else {
+			logError("Failed to start evals web app. See above for details.")
+		}
 	}
 }
 
