@@ -336,20 +336,22 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					const match = versionOutput.match(/(\d+\.\d+\.\d+)/)
 					if (match) {
 						foundVersion = match[1]
-					}
-					logInfo(`${runtime.plugin} detected version: ${foundVersion}`)
-					if (semver.satisfies(foundVersion, runtime.version)) {
-						logSuccess(`${runtime.plugin} already installed with compatible version (${foundVersion})`)
-						continue
+						logInfo(`${runtime.plugin} detected version: ${foundVersion}`)
+						if (semver.satisfies(foundVersion, runtime.version)) {
+							logSuccess(`${runtime.plugin} already installed with compatible version (${foundVersion})`)
+							continue
+						} else {
+							logWarning(
+								`${runtime.plugin} found, but version ${foundVersion} is not compatible (required: ${runtime.version}). Installing required version...`,
+							)
+						}
 					} else {
 						logWarning(
-							`${runtime.plugin} found, but version ${foundVersion} is not compatible (required: ${runtime.version}). Installing required version...`,
+							`${runtime.plugin} found, but could not determine version from output: "${versionOutput}". Proceeding with installation...`,
 						)
 					}
 				} else {
-					logWarning(
-						`${runtime.plugin} not found or version could not be determined. Proceeding with installation...`,
-					)
+					logWarning(`${runtime.plugin} not found. Proceeding with installation...`)
 				}
 				logInfo(`Installing ${runtime.plugin} via winget...`)
 				const result = spawn.sync(
