@@ -543,9 +543,9 @@ async function buildExtension(): Promise<void> {
 	if (build) {
 		process.chdir("..")
 		fs.mkdirSync("bin", { recursive: true })
-		spawn.sync("pnpm", ["install-extension"], { stdio: "inherit" })
-		spawn.sync("pnpm", ["install-webview"], { stdio: "inherit" })
-		spawn.sync("pnpm", ["install-e2e"], { stdio: "inherit" })
+		spawn.sync("npm", ["run", "install-extension"], { stdio: "inherit" })
+		spawn.sync("npm", ["run", "install-webview"], { stdio: "inherit" })
+		spawn.sync("npm", ["run", "install-e2e"], { stdio: "inherit" })
 		spawn.sync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		spawn.sync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		process.chdir("evals")
