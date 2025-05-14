@@ -2,3 +2,4 @@ packages:
     - "config/*"
     - "apps/*"
     - "packages/*"
+    - "scripts"
