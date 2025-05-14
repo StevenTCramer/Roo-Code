@@ -541,14 +541,14 @@ async function buildExtension(): Promise<void> {
 	logInfo("Building Roo Code extension...")
 	const { build } = await inquirer.prompt([{ type: "confirm", name: "build", message: "Build Roo Code extension?" }])
 	if (build) {
-		process.chdir("..")
+		process.chdir(path.resolve(__dirname, "../.."))
 		fs.mkdirSync("bin", { recursive: true })
 		spawn.sync("npm", ["run", "install-extension"], { stdio: "inherit" })
 		spawn.sync("npm", ["run", "install-webview"], { stdio: "inherit" })
 		spawn.sync("npm", ["run", "install-e2e"], { stdio: "inherit" })
 		spawn.sync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		spawn.sync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
-		process.chdir("evals")
+		process.chdir(path.resolve(__dirname, ".."))
 		logSuccess("Roo Code extension built and installed")
 	} else {
 		logInfo("Skipped building Roo Code extension")
