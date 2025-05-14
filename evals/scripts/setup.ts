@@ -503,6 +503,11 @@ async function setupDatabaseAndWeb(): Promise<void> {
 	fs.mkdirSync(dataDir, { recursive: true })
 	logSuccess(`Ensured data directory exists at ${dataDir}`)
 
+	// Set environment variables for database connection
+	// set the env BENCHMARKS_DB_PATH to the dataDir prefixed with the protocol `file:`
+	const dbPath = `file:${dataDir}/benchmarks.db`
+	process.env.BENCHMARKS_DB_PATH = dbPath
+
 	const dbPush = spawn.sync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
 	if (dbPush.status !== 0) {
 		logError("Database push failed. See above for details.")
