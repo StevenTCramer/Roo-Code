@@ -1,11 +1,14 @@
-import os from "os"
-import fs from "fs"
-import path from "path"
+import * as os from "os"
+import * as fs from "fs"
+import * as path from "path"
 import inquirer from "inquirer"
-import { spawnSync } from "cross-spawn"
+import * as spawn from "cross-spawn"
 import axios from "axios"
 import chalk from "chalk"
-import semver from "semver"
+import * as semver from "semver"
+import { fileURLToPath } from "url"
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 function getOS(): "macOS" | "Linux" | "Windows" {
 	const platform = os.platform()
@@ -20,29 +23,29 @@ const logSuccess = (message: string) => console.log(chalk.green(`✅ ${message}`
 const logWarning = (message: string) => console.log(chalk.yellow(`⚠️ ${message}`))
 const logError = (message: string) => console.error(chalk.red(`🚨 ${message}`))
 
-function installPowerShell(os: string): void {
-	if (os === "Windows") return // PowerShell pre-installed on Windows
-	if (spawnSync("pwsh", ["--version"]).status !== 0) {
+function installPowerShell(osType: string): void {
+	if (osType === "Windows") return // PowerShell pre-installed on Windows
+	if (spawn.sync("pwsh", ["--version"]).status !== 0) {
 		logInfo("Installing PowerShell Core...")
-		if (os === "macOS") {
-			spawnSync(
+		if (osType === "macOS") {
+			spawn.sync(
 				"/bin/bash",
 				["-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"],
 				{ stdio: "inherit" },
 			)
-			spawnSync("brew", ["install", "powershell"], { stdio: "inherit" })
-		} else if (os === "Linux") {
-			spawnSync("sudo", ["apt-get", "update"], { stdio: "inherit" })
-			spawnSync("sudo", ["apt-get", "install", "-y", "wget"], { stdio: "inherit" })
-			spawnSync(
+			spawn.sync("brew", ["install", "powershell"], { stdio: "inherit" })
+		} else if (osType === "Linux") {
+			spawn.sync("sudo", ["apt-get", "update"], { stdio: "inherit" })
+			spawn.sync("sudo", ["apt-get", "install", "-y", "wget"], { stdio: "inherit" })
+			spawn.sync(
 				"wget",
 				["-q", "https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb"],
 				{ stdio: "inherit" },
 			)
-			spawnSync("sudo", ["dpkg", "-i", "packages-microsoft-prod.deb"], { stdio: "inherit" })
-			spawnSync("sudo", ["apt-get", "update"], { stdio: "inherit" })
-			spawnSync("sudo", ["apt-get", "install", "-y", "powershell"], { stdio: "inherit" })
-			spawnSync("rm", ["packages-microsoft-prod.deb"], { stdio: "inherit" })
+			spawn.sync("sudo", ["dpkg", "-i", "packages-microsoft-prod.deb"], { stdio: "inherit" })
+			spawn.sync("sudo", ["apt-get", "update"], { stdio: "inherit" })
+			spawn.sync("sudo", ["apt-get", "install", "-y", "powershell"], { stdio: "inherit" })
+			spawn.sync("rm", ["packages-microsoft-prod.deb"], { stdio: "inherit" })
 		}
 		logSuccess("PowerShell Core installed")
 	} else {
@@ -50,27 +53,27 @@ function installPowerShell(os: string): void {
 	}
 }
 
-function installPackageManager(os: string): void {
-	if (os === "macOS" && spawnSync("brew", ["--version"]).status !== 0) {
+function installPackageManager(osType: string): void {
+	if (osType === "macOS" && spawn.sync("brew", ["--version"]).status !== 0) {
 		logInfo("Installing Homebrew...")
-		spawnSync(
+		spawn.sync(
 			"/bin/bash",
 			["-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"],
 			{ stdio: "inherit" },
 		)
 		logSuccess("Homebrew installed")
-	} else if (os === "Linux") {
-		if (spawnSync("apt", ["--version"]).status !== 0) {
+	} else if (osType === "Linux") {
+		if (spawn.sync("apt", ["--version"]).status !== 0) {
 			logWarning("apt not found; please ensure a compatible package manager is installed")
 		} else {
 			logInfo("Updating apt...")
-			spawnSync("sudo", ["apt", "update"], { stdio: "inherit" })
-			spawnSync("sudo", ["apt", "install", "-y", "curl", "git"], { stdio: "inherit" })
+			spawn.sync("sudo", ["apt", "update"], { stdio: "inherit" })
+			spawn.sync("sudo", ["apt", "install", "-y", "curl", "git"], { stdio: "inherit" })
 			logSuccess("apt updated and prerequisites installed")
 		}
-	} else if (os === "Windows" && spawnSync("winget", ["--version"]).status !== 0) {
+	} else if (osType === "Windows" && spawn.sync("winget", ["--version"]).status !== 0) {
 		logInfo("Installing winget...")
-		spawnSync(
+		spawn.sync(
 			"powershell",
 			["Add-AppxPackage", "-RegisterByFamilyName", "-MainPackage", "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"],
 			{ stdio: "inherit", shell: true },
@@ -81,23 +84,23 @@ function installPackageManager(os: string): void {
 	}
 }
 
-function installAsdf(os: string): boolean {
-	if (os === "Windows") {
+function installAsdf(osType: string): boolean {
+	if (osType === "Windows") {
 		logInfo("Using winget for Windows runtime management.")
 		return false
 	}
-	if (spawnSync("asdf", ["--version"]).status !== 0) {
+	if (spawn.sync("asdf", ["--version"]).status !== 0) {
 		logInfo("Installing asdf...")
-		if (os === "macOS") {
-			spawnSync("brew", ["install", "asdf"], { stdio: "inherit" })
-		} else if (os === "Linux") {
-			spawnSync(
+		if (osType === "macOS") {
+			spawn.sync("brew", ["install", "asdf"], { stdio: "inherit" })
+		} else if (osType === "Linux") {
+			spawn.sync(
 				"git",
 				["clone", "https://github.com/asdf-vm/asdf.git", `${os.homedir()}/.asdf`, "--branch", "v0.14.1"],
 				{ stdio: "inherit" },
 			)
 		}
-		const shellConfig = os === "macOS" ? ".zshrc" : ".bashrc"
+		const shellConfig = osType === "macOS" ? ".zshrc" : ".bashrc"
 		const asdfLine = `. $HOME/.asdf/asdf.sh`
 		if (
 			!fs.existsSync(`${os.homedir()}/${shellConfig}`) ||
@@ -135,18 +138,18 @@ async function selectLanguages(): Promise<string[]> {
 		fs.writeFileSync(
 			"../runtimes.json",
 			JSON.stringify(
-				selected.map((s) => s.split(" ")),
+				selected.map((s: string) => s.split(" ")),
 				null,
 				2,
 			),
 		)
 	}
-	logSuccess(`Selected languages: ${selected.map((s) => s.split(" ")[0]).join(", ")}`)
+	logSuccess(`Selected languages: ${selected.map((s: string) => s.split(" ")[0]).join(", ")}`)
 	return selected
 }
 
 function getCommandOutput(command: string, args: string[] = []): string | null {
-	const result = spawnSync(command, args, { encoding: "utf8", shell: getOS() === "Windows" })
+	const result = spawn.sync(command, args, { encoding: "utf8", shell: getOS() === "Windows" })
 	if (result.status !== 0) {
 		return null
 	}
@@ -236,9 +239,9 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					continue
 				}
 				logInfo(`Installing ${runtime.plugin} via asdf...`)
-				spawnSync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
-				spawnSync("asdf", ["install", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
-				spawnSync("asdf", ["global", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
+				spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
+				spawn.sync("asdf", ["install", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
+				spawn.sync("asdf", ["global", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
@@ -255,9 +258,9 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				continue
 			}
 			logInfo(`Installing ${tool.plugin} via asdf...`)
-			spawnSync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
-			spawnSync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
-			spawnSync("asdf", ["global", tool.plugin, tool.version], { stdio: "inherit" })
+			spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
+			spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+			spawn.sync("asdf", ["global", tool.plugin, tool.version], { stdio: "inherit" })
 			logSuccess(`${tool.plugin} installed`)
 		}
 		if (selected.some((s) => s.includes("python"))) {
@@ -266,17 +269,17 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via asdf...")
-				spawnSync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
+				spawn.sync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
 					stdio: "inherit",
 				})
-				spawnSync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
-				spawnSync("asdf", ["global", "uv", "latest"], { stdio: "inherit" })
+				spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+				spawn.sync("asdf", ["global", "uv", "latest"], { stdio: "inherit" })
 				logSuccess("uv installed")
 			}
 			const venvPath = path.resolve(__dirname, "..", ".venv")
 			if (!fs.existsSync(venvPath)) {
 				logInfo(`Creating Python virtual environment at ${venvPath}...`)
-				spawnSync("uv", ["venv", venvPath], { stdio: "inherit" })
+				spawn.sync("uv", ["venv", venvPath], { stdio: "inherit" })
 				logSuccess(`Virtual environment created at ${venvPath}`)
 				logInfo(
 					`Activate it using: source ${path.join(venvPath, os === "Windows" ? "Scripts" : "bin", "activate")}`,
@@ -294,7 +297,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					continue
 				}
 				logInfo(`Installing ${runtime.plugin} via winget...`)
-				const result = spawnSync(
+				const result = spawn.sync(
 					"winget",
 					[
 						"install",
@@ -308,7 +311,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				)
 				if (result.status !== 0) {
 					logWarning(`${runtime.plugin} version ${runtime.version} not found. Installing latest...`)
-					spawnSync("winget", ["install", runtime.winget, "--silent", "--accept-package-agreements"], {
+					spawn.sync("winget", ["install", runtime.winget, "--silent", "--accept-package-agreements"], {
 						stdio: "inherit",
 						shell: true,
 					})
@@ -329,7 +332,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				continue
 			}
 			logInfo(`Installing ${tool.plugin} via winget...`)
-			spawnSync("winget", ["install", tool.winget, "--silent", "--accept-package-agreements"], {
+			spawn.sync("winget", ["install", tool.winget, "--silent", "--accept-package-agreements"], {
 				stdio: "inherit",
 				shell: true,
 			})
@@ -341,13 +344,13 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via pip...")
-				spawnSync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
+				spawn.sync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
 				logSuccess("uv installed")
 			}
 			const venvPath = path.resolve(__dirname, "..", ".venv")
 			if (!fs.existsSync(venvPath)) {
 				logInfo(`Creating Python virtual environment at ${venvPath}...`)
-				spawnSync("uv", ["venv", venvPath], { stdio: "inherit" })
+				spawn.sync("uv", ["venv", venvPath], { stdio: "inherit" })
 				logSuccess(`Virtual environment created at ${venvPath}`)
 				logInfo(
 					`Activate it using: .\\${path.relative(path.resolve(__dirname, ".."), venvPath)}\\Scripts\\activate`,
@@ -361,7 +364,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 
 function installVSCodeExtensions(): void {
 	logInfo("Installing VS Code extensions...")
-	if (spawnSync("code", ["--version"]).status !== 0) {
+	if (spawn.sync("code", ["--version"]).status !== 0) {
 		logError("VS Code CLI not found. Please install Visual Studio Code.")
 		process.exit(1)
 	}
@@ -374,7 +377,7 @@ function installVSCodeExtensions(): void {
 		"rooveterinaryinc.roo-cline",
 	]
 	for (const ext of extensions) {
-		spawnSync("code", ["--install-extension", ext], { stdio: "inherit" })
+		spawn.sync("code", ["--install-extension", ext], { stdio: "inherit" })
 	}
 	logSuccess("VS Code extensions installed")
 }
@@ -389,7 +392,7 @@ async function setupRepository(): Promise<void> {
 	try {
 		fs.accessSync(path.join(repoPath, ".git"))
 		logSuccess(`Repository found at ${repoPath}. Updating...`)
-		spawnSync("git", ["-C", repoPath, "pull"], { stdio: "inherit" })
+		spawn.sync("git", ["-C", repoPath, "pull"], { stdio: "inherit" })
 		logSuccess("Repository updated")
 	} catch {
 		logWarning(`Repository not found at ${repoPath}.`)
@@ -409,7 +412,7 @@ async function setupRepository(): Promise<void> {
 
 		try {
 			fs.mkdirSync(path.dirname(repoPath), { recursive: true })
-			if (spawnSync("gh", ["--version"]).status === 0) {
+			if (spawn.sync("gh", ["--version"]).status === 0) {
 				const { forkRepo } = await inquirer.prompt([
 					{
 						type: "confirm",
@@ -420,7 +423,7 @@ async function setupRepository(): Promise<void> {
 				])
 
 				if (forkRepo) {
-					spawnSync("gh", ["repo", "fork", repoUpstream, "--clone=true", "--", repoPath], {
+					spawn.sync("gh", ["repo", "fork", repoUpstream, "--clone=true", "--", repoPath], {
 						stdio: "inherit",
 					})
 					logSuccess(`Forked and cloned cte/evals to ${repoPath}`)
@@ -428,7 +431,7 @@ async function setupRepository(): Promise<void> {
 				}
 			}
 
-			spawnSync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
+			spawn.sync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
 			logSuccess(`Cloned cte/evals to ${repoPath}`)
 		} catch (error) {
 			logError(`Failed to clone cte/evals: ${error.message}`)
@@ -460,13 +463,13 @@ async function setupDatabaseAndWeb(): Promise<void> {
 	const dataDir = path.resolve(__dirname, "..", "data")
 	fs.mkdirSync(dataDir, { recursive: true })
 	logSuccess(`Ensured data directory exists at ${dataDir}`)
-	spawnSync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
-	spawnSync("pnpm", ["--filter", "@evals/db", "db:enable-wal"], { stdio: "inherit" })
+	spawn.sync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
+	spawn.sync("pnpm", ["--filter", "@evals/db", "db:enable-wal"], { stdio: "inherit" })
 	logSuccess("Database synced")
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
 		logInfo("Starting evals web app...")
-		spawnSync("pnpm", ["web"], { stdio: "inherit" })
+		spawn.sync("pnpm", ["web"], { stdio: "inherit" })
 		logSuccess("Evals web app started")
 	}
 }
@@ -477,11 +480,11 @@ async function buildExtension(): Promise<void> {
 	if (build) {
 		process.chdir("..")
 		fs.mkdirSync("bin", { recursive: true })
-		spawnSync("pnpm", ["install-extension"], { stdio: "inherit" })
-		spawnSync("pnpm", ["install-webview"], { stdio: "inherit" })
-		spawnSync("pnpm", ["install-e2e"], { stdio: "inherit" })
-		spawnSync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
-		spawnSync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
+		spawn.sync("pnpm", ["install-extension"], { stdio: "inherit" })
+		spawn.sync("pnpm", ["install-webview"], { stdio: "inherit" })
+		spawn.sync("pnpm", ["install-e2e"], { stdio: "inherit" })
+		spawn.sync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
+		spawn.sync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		process.chdir("evals")
 		logSuccess("Roo Code extension built and installed")
 	} else {
