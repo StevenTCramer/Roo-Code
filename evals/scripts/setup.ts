@@ -563,11 +563,11 @@ async function main(): Promise<void> {
 	await setupRepository()
 	const selected = await selectLanguages()
 	installRuntimesAndTools(os, selected)
+	await buildExtension()
 	installVSCodeExtensions()
 	await setupEnvironment()
 	await setupDatabase()
 	await startWebApp()
-	await buildExtension()
 	logSuccess("Setup complete!")
 }
 
