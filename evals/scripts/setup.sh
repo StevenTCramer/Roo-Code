@@ -18,7 +18,19 @@ if ! asdf plugin-list | grep -q "nodejs"; then
 fi
 
 # Import Node.js release team's OpenPGP keys (required for asdf-nodejs)
-bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
+KEYRING_SCRIPT="$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+echo "Waiting for asdf nodejs plugin to finish installing..."
+for i in {1..10}; do
+  if [ -f "$KEYRING_SCRIPT" ]; then
+    bash "$KEYRING_SCRIPT"
+    break
+  fi
+  sleep 1
+done
+if [ ! -f "$KEYRING_SCRIPT" ]; then
+  echo "Error: asdf nodejs plugin install failed or import-release-team-keyring script not found after waiting."
+  exit 1
+fi
 
 # Install Node.js 20.18.1 if not already installed
 if ! asdf list nodejs | grep -q "20.18.1"; then
