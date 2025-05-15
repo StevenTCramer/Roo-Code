@@ -89,6 +89,7 @@ export class IpcClient extends EventEmitter<IpcClientEvents> {
 	}
 
 	public sendMessage(message: IpcMessage) {
+		this.log("[client#sendMessage]", message)
 		ipc.of[this._id]?.emit("message", message)
 	}
 
