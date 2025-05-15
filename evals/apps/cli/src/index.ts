@@ -539,25 +539,6 @@ const runUnitTest = async ({ task }: { task: Task }) => {
 		}
 	}
 
-	// Pause after all logging so user can review output before window closes
-	if (process.env.PAUSE_ON_EXIT === "1") {
-		const readline = await import("node:readline")
-		const rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		})
-		await new Promise<void>((resolve) => {
-			rl.question("***** Press Enter to close this window and finish the test... *****", () => {
-				rl.close()
-				resolve(void 0)
-			})
-		})
-	} else {
-		logToConsoleAndFile(
-			"***** Pausing 10 seconds before closing to allow log review... (set PAUSE_ON_EXIT=1 for keypress) *****",
-		)
-		await new Promise((resolve) => setTimeout(resolve, 10_000))
-	}
 	return passed
 }
 
