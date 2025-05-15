@@ -1,4 +1,4 @@
-console.log("***** CLI STARTED: If you see this, stdout is working *****")
+logToConsoleAndFile("***** CLI STARTED: If you see this, stdout is working *****")
 import * as fs from "fs"
 import * as path from "path"
 import * as os from "os"
@@ -21,12 +21,12 @@ function logToConsoleAndFile(message: string, isError = false) {
 	try {
 		fs.appendFileSync(LOG_FILE_PATH, message + "\n")
 	} catch (e) {
-		console.error("Failed to write to log file:", e)
+		logToConsoleAndFile("Failed to write to log file: " + e, true)
 	}
 	if (isError) {
-		console.error(message)
+		logToConsoleAndFile(message, true)
 	} else {
-		console.log(message)
+		logToConsoleAndFile(message)
 	}
 }
 import psTree from "ps-tree"
@@ -73,7 +73,7 @@ const testCommands: Record<ExerciseLanguage, { commands: string[]; timeout?: num
 			(() => {
 				const platform = os.platform()
 				const command = platform === "win32" ? "gradlew.bat test" : "./gradlew test"
-				console.log(
+				logToConsoleAndFile(
 					`${Date.now()} [cli#testCommands] Generated Java command: "${command}" (platform: ${platform})`,
 				)
 				return command
@@ -87,7 +87,9 @@ const testCommands: Record<ExerciseLanguage, { commands: string[]; timeout?: num
 			(() => {
 				const platform = os.platform()
 				const command = `uv run ${platform === "win32" ? "python" : "python3"} -m pytest -o markers=task .`
-				console.log(`${Date.now()} [cli#testCommands] Generated command: "${command}" (platform: ${platform})`)
+				logToConsoleAndFile(
+					`${Date.now()} [cli#testCommands] Generated command: "${command}" (platform: ${platform})`,
+				)
 				return command
 			})(),
 		],
@@ -209,7 +211,7 @@ const run = async (toolbox: GluegunToolbox) => {
 	await Promise.all(runningPromises)
 
 	const result = await finishRun(run.id)
-	console.log(`${Date.now()} [cli#run]`, result)
+	logToConsoleAndFile(`${Date.now()} [cli#run] ${JSON.stringify(result)}`)
 
 	await execa({ cwd: exercisesPath })`git add .`
 	await execa({ cwd: exercisesPath })`git commit -m ${`Run #${run.id}`} --no-verify`
@@ -235,7 +237,7 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 	// Don't await execa and store result as subprocess.
 	// subprocess.stdout.pipe(process.stdout)
 
-	console.log(`${Date.now()} [cli#runExercise] Opening new VS Code window at ${workspacePath}`)
+	logToConsoleAndFile(`${Date.now()} [cli#runExercise] Opening new VS Code window at ${workspacePath}`)
 
 	await execa({
 		env: {
@@ -246,14 +248,14 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 
 	// Give VSCode some time to spawn before connecting to its unix socket.
 	await new Promise((resolve) => setTimeout(resolve, 3_000))
-	console.log(`${Date.now()} [cli#runExercise] Connecting to ${taskSocketPath}`)
-	const client = new IpcClient(taskSocketPath)
+	logToConsoleAndFile(`${Date.now()} [cli#runExercise] Connecting to ${taskSocketPath}`)
+	const client = new IpcClient(taskSocketPath, (msg: string) => logToConsoleAndFile(msg))
 
 	try {
 		await pWaitFor(() => client.isReady, { interval: 250, timeout: 5_000 })
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (error) {
-		console.log(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] unable to connect`)
+		logToConsoleAndFile(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] unable to connect`)
 		client.disconnect()
 		return { success: false }
 	}
@@ -282,9 +284,8 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 		}
 
 		if (!ignoreEvents.log.includes(eventName)) {
-			console.log(
-				`${Date.now()} [cli#runExercise | ${language} / ${exercise}] taskEvent -> ${eventName}`,
-				payload,
+			logToConsoleAndFile(
+				`${Date.now()} [cli#runExercise | ${language} / ${exercise}] taskEvent -> ${eventName} ${JSON.stringify(payload)}`,
 			)
 		}
 
@@ -346,11 +347,11 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 	})
 
 	client.on(IpcMessageType.Disconnect, async () => {
-		console.log(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] disconnect`)
+		logToConsoleAndFile(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] disconnect`)
 		isClientDisconnected = true
 	})
 
-	console.log(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] starting task`)
+	logToConsoleAndFile(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] starting task`)
 
 	client.sendMessage({
 		type: IpcMessageType.TaskCommand,
@@ -374,7 +375,7 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 		await pWaitFor(() => !!taskFinishedAt || isClientDisconnected, { interval: 1_000, timeout: TASK_TIMEOUT })
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (error) {
-		console.log(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] time limit reached`)
+		logToConsoleAndFile(`${Date.now()} [cli#runExercise | ${language} / ${exercise}] time limit reached`)
 
 		// Cancel the task.
 		if (rooTaskId && !isClientDisconnected) {
@@ -599,13 +600,14 @@ const main = async () => {
 }
 
 if (!fs.existsSync(extensionDevelopmentPath)) {
-	console.error(`"extensionDevelopmentPath" does not exist.`)
+	logToConsoleAndFile(`"extensionDevelopmentPath" does not exist.`, true)
 	process.exit(1)
 }
 
 if (!fs.existsSync(exercisesPath)) {
-	console.error(
+	logToConsoleAndFile(
 		`Exercises path does not exist. Please run "git clone https://github.com/cte/Roo-Code-Benchmark.git exercises".`,
+		true,
 	)
 	process.exit(1)
 }
