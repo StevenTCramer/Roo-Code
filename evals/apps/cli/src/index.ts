@@ -24,9 +24,9 @@ function logToConsoleAndFile(message: string, isError = false) {
 		console.error("Failed to write to log file: " + e)
 	}
 	if (isError) {
-		logToConsoleAndFile(message, true)
+		console.error(message)
 	} else {
-		logToConsoleAndFile(message)
+		console.log(message)
 	}
 }
 import psTree from "ps-tree"
