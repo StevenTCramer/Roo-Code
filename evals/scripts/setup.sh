@@ -10,7 +10,9 @@ fi
 
 # Source nvm
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
 # Check if nvm is available after sourcing
 if ! command -v nvm &>/dev/null; then
   echo "Error: nvm is not available in this shell. Please open a new terminal or source ~/.bashrc, then re-run this script."
