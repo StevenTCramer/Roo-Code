@@ -445,9 +445,6 @@ const runUnitTest = async ({ task }: { task: Task }) => {
 				`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] running "${command.join(" ")}"`,
 			)
 			// Log relevant environment variables for debugging (always log)
-			logToConsoleAndFile(`GOCACHE: ${process.env.GOCACHE}`)
-			logToConsoleAndFile(`LocalAppData: ${process.env.LocalAppData}`)
-			logToConsoleAndFile(`LOCALAPPDATA: ${process.env.LOCALAPPDATA}`)
 			logToConsoleAndFile(`Full process.env: ${JSON.stringify(process.env, null, 2)}`)
 
 			const subprocess = execa({ cwd, shell: true, reject: false })`${command}`
