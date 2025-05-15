@@ -1,4 +1,3 @@
-logToConsoleAndFile("***** CLI STARTED: If you see this, stdout is working *****")
 import * as fs from "fs"
 import * as path from "path"
 import * as os from "os"
@@ -12,6 +11,7 @@ if (!fs.existsSync(logsDir)) {
 const timestamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 15)
 const defaultLogFile = path.join(logsDir, `test-run-${timestamp}.log`)
 const LOG_FILE_PATH = process.env.TEST_LOG_FILE || defaultLogFile
+logToConsoleAndFile("***** CLI STARTED: If you see this, both stdout and file logging are working *****")
 // Helper to log to both console and file
 import pWaitFor from "p-wait-for"
 import { execa, parseCommandString } from "execa"
@@ -21,7 +21,7 @@ function logToConsoleAndFile(message: string, isError = false) {
 	try {
 		fs.appendFileSync(LOG_FILE_PATH, message + "\n")
 	} catch (e) {
-		logToConsoleAndFile("Failed to write to log file: " + e, true)
+		console.error("Failed to write to log file: " + e)
 	}
 	if (isError) {
 		logToConsoleAndFile(message, true)
