@@ -448,6 +448,23 @@ const runUnitTest = async ({ task }: { task: Task }) => {
 
 			const subprocess = execa({ cwd, shell: true, reject: false })`${command}`
 
+			// Capture and display stdio in real time
+			if (subprocess.stdout) {
+				subprocess.stdout.on("data", (chunk) => {
+					logToConsoleAndFile(
+						`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] [stdout] ${chunk.toString()}`,
+					)
+				})
+			}
+			if (subprocess.stderr) {
+				subprocess.stderr.on("data", (chunk) => {
+					logToConsoleAndFile(
+						`${Date.now()} [cli#runUnitTest | ${task.language} / ${task.exercise}] [stderr] ${chunk.toString()}`,
+						true,
+					)
+				})
+			}
+
 			const timeout = setTimeout(async () => {
 				const descendants = await new Promise<number[]>((resolve, reject) => {
 					psTree(subprocess.pid!, (err, children) => {
