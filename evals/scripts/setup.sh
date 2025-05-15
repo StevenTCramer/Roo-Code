@@ -11,6 +11,11 @@ fi
 # Source nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# Check if nvm is available after sourcing
+if ! command -v nvm &>/dev/null; then
+  echo "Error: nvm is not available in this shell. Please open a new terminal or source ~/.bashrc, then re-run this script."
+  exit 1
+fi
 
 # Ensure Node.js 20.18.1 via nvm
 if ! command -v node &>/dev/null || [[ "$(node --version)" != "v20.18.1" ]]; then
@@ -33,5 +38,4 @@ fi
 
 # Run TypeScript setup from evals/scripts/
 echo "Running setup script..."
-cd scripts
 pnpm run setup
