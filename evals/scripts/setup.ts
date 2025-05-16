@@ -157,7 +157,7 @@ async function selectLanguages(): Promise<string[]> {
 		{ name: "Go (1.24.2)", value: "golang 1.24.2", checked: true },
 		{ name: "Rust (1.85.1)", value: "rust 1.85.1", checked: true },
 		{ name: "Java (openjdk-17)", value: "java openjdk-17", checked: true },
-		{ name: ".NET (8.0.401)", value: "dotnet 8.0.401", checked: true },
+		{ name: ".NET (9.0.300)", value: "dotnet 9.0.300", checked: true },
 	]
 	logInfo("Select eval languages:")
 	const { selected } = await inquirer.prompt([
@@ -243,7 +243,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "dotnet",
 			winget: "Microsoft.DotNet.SDK.8",
-			version: ">=8.0.401",
+			version: "9.0.300",
 			checkCmd: "dotnet",
 			checkArgs: ["--version"],
 			url: "https://github.com/hensou/asdf-dotnet.git",
