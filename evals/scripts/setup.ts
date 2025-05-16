@@ -279,11 +279,29 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				}
 				logInfo(`Installing ${runtime.plugin} via asdf...`)
 				logInfo(`Running: asdf plugin add ${runtime.plugin} ${runtime.url}`)
-				spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
+				const pluginAddResult = spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], {
+					stdio: "inherit",
+				})
+				if (pluginAddResult.status !== 0) {
+					logError(`Failed to add asdf plugin for ${runtime.plugin}`)
+					process.exit(1)
+				}
 				logInfo(`Running: asdf install ${runtime.plugin} ${runtime.version}`)
-				spawn.sync("asdf", ["install", runtime.plugin, runtime.version], { stdio: "inherit" })
+				const installResult = spawn.sync("asdf", ["install", runtime.plugin, runtime.version], {
+					stdio: "inherit",
+				})
+				if (installResult.status !== 0) {
+					logError(`Failed to install ${runtime.plugin} via asdf`)
+					process.exit(1)
+				}
 				logInfo(`Running: asdf set --parent ${runtime.plugin} ${runtime.version}`)
-				spawn.sync("asdf", ["set", "--parent", runtime.plugin, runtime.version], { stdio: "inherit" })
+				const setResult = spawn.sync("asdf", ["set", "--parent", runtime.plugin, runtime.version], {
+					stdio: "inherit",
+				})
+				if (setResult.status !== 0) {
+					logError(`Failed to set ${runtime.plugin} as parent in asdf`)
+					process.exit(1)
+				}
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
@@ -305,11 +323,23 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			}
 			logInfo(`Installing ${tool.plugin} via asdf...`)
 			logInfo(`Running: asdf plugin add ${tool.plugin} ${tool.url}`)
-			spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
+			const pluginAddResult = spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
+			if (pluginAddResult.status !== 0) {
+				logError(`Failed to add asdf plugin for ${tool.plugin}`)
+				process.exit(1)
+			}
 			logInfo(`Running: asdf install ${tool.plugin} ${tool.version}`)
-			spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+			const installResult = spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+			if (installResult.status !== 0) {
+				logError(`Failed to install ${tool.plugin} via asdf`)
+				process.exit(1)
+			}
 			logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
-			spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
+			const setResult = spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
+			if (setResult.status !== 0) {
+				logError(`Failed to set ${tool.plugin} as parent in asdf`)
+				process.exit(1)
+			}
 			const newVersion = getCommandOutput(tool.checkCmd, tool.checkArgs)
 			if (newVersion) {
 				logSuccess(`${tool.plugin} installed (${newVersion})`)
@@ -324,14 +354,30 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via asdf...")
-				logInfo("Running: asdf plugin add uv https://github.com/owenthereal/asdf-uv.git")
-				spawn.sync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
-					stdio: "inherit",
-				})
+				logInfo("Running: asdf plugin add uv https://github.com/owengenix/asdf-uv.git")
+				const pluginAddResult = spawn.sync(
+					"asdf",
+					["plugin", "add", "uv", "https://github.com/owengenix/asdf-uv.git"],
+					{
+						stdio: "inherit",
+					},
+				)
+				if (pluginAddResult.status !== 0) {
+					logError("Failed to add asdf uv plugin")
+					return
+				}
 				logInfo("Running: asdf install uv latest")
-				spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+				const installResult = spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+				if (installResult.status !== 0) {
+					logError("Failed to install uv via asdf")
+					return
+				}
 				logInfo("Running: asdf set --parent uv latest")
-				spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
+				const setResult = spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
+				if (setResult.status !== 0) {
+					logError("Failed to set uv as parent in asdf")
+					return
+				}
 				logSuccess("uv installed")
 			}
 			const venvPath = path.resolve(__dirname, "..", ".venv")
@@ -433,13 +479,21 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via pip...")
-				spawn.sync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
+				const pipResult = spawn.sync("pip", ["install", "uv"], { stdio: "inherit", shell: true })
+				if (pipResult.status !== 0) {
+					logError("Failed to install uv via pip")
+					return
+				}
 				logSuccess("uv installed")
 			}
 			const venvPath = path.resolve(__dirname, "..", ".venv")
 			if (!fs.existsSync(venvPath)) {
 				logInfo(`Creating Python virtual environment at ${venvPath}...`)
-				spawn.sync("uv", ["venv", venvPath], { stdio: "inherit" })
+				const venvResult = spawn.sync("uv", ["venv", venvPath], { stdio: "inherit" })
+				if (venvResult.status !== 0) {
+					logError(`Failed to create virtual environment at ${venvPath}`)
+					return
+				}
 				logSuccess(`Virtual environment created at ${venvPath}`)
 				logInfo(
 					`Activate it using: .\\${path.relative(path.resolve(__dirname, ".."), venvPath)}\\Scripts\\activate`,
