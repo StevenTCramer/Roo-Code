@@ -316,6 +316,31 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			}
 		}
 		for (const tool of tools) {
+			let toolVersion = tool.version
+			// Special handling for pnpm: must use a specific version, not "latest"
+			if (tool.plugin === "pnpm" && (tool.version === "latest" || !semver.valid(tool.version))) {
+				logInfo("Fetching latest pnpm version from asdf list-all...")
+				const listAllResult = spawn.sync("asdf", ["list-all", "pnpm"], { encoding: "utf8" })
+				if (listAllResult.status === 0 && listAllResult.stdout) {
+					const versions = listAllResult.stdout
+						.split("\n")
+						.map((v) => v.trim())
+						.filter((v) => semver.valid(v))
+					if (versions.length > 0) {
+						// Sort descending and pick the highest
+						versions.sort(semver.rcompare)
+						toolVersion = versions[0]
+						logInfo(`Using pnpm version ${toolVersion}`)
+					} else {
+						logError("Could not determine latest pnpm version from asdf list-all")
+						process.exit(1)
+					}
+				} else {
+					logError("Failed to fetch pnpm versions from asdf")
+					process.exit(1)
+				}
+			}
+
 			const versionOutput = getCommandOutput(tool.checkCmd, tool.checkArgs)
 			// Check if asdf plugin is already added
 			const pluginListResult = spawn.sync("asdf", ["plugin", "list"], { encoding: "utf8" })
@@ -325,11 +350,11 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			// Check if the tool/version is already installed
 			const asdfListResult = spawn.sync("asdf", ["list", tool.plugin], { encoding: "utf8" })
 			const asdfList = asdfListResult.status === 0 ? asdfListResult.stdout.split("\n").map((s) => s.trim()) : []
-			const versionAlreadyInstalled = asdfList.some((v) => v === tool.version || v === "latest")
+			const versionAlreadyInstalled = asdfList.some((v) => v === toolVersion)
 			// Check if the tool/version is already set as current
 			const asdfCurrentResult = spawn.sync("asdf", ["current", tool.plugin], { encoding: "utf8" })
 			const asdfCurrent = asdfCurrentResult.status === 0 ? asdfCurrentResult.stdout : ""
-			const versionAlreadySet = asdfCurrent.includes(tool.version) || asdfCurrent.includes("latest")
+			const versionAlreadySet = asdfCurrent.includes(toolVersion)
 
 			if (versionOutput && versionAlreadyInstalled && versionAlreadySet) {
 				logSuccess(`${tool.plugin} already installed (${versionOutput})`)
@@ -349,18 +374,18 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logInfo(`asdf plugin for ${tool.plugin} already added`)
 			}
 			if (!versionAlreadyInstalled) {
-				logInfo(`Running: asdf install ${tool.plugin} ${tool.version}`)
-				const installResult = spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+				logInfo(`Running: asdf install ${tool.plugin} ${toolVersion}`)
+				const installResult = spawn.sync("asdf", ["install", tool.plugin, toolVersion], { stdio: "inherit" })
 				if (installResult.status !== 0) {
 					logError(`Failed to install ${tool.plugin} via asdf`)
 					process.exit(1)
 				}
 			} else {
-				logInfo(`${tool.plugin} version ${tool.version} already installed`)
+				logInfo(`${tool.plugin} version ${toolVersion} already installed`)
 			}
 			if (!versionAlreadySet) {
-				logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
-				const setResult = spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], {
+				logInfo(`Running: asdf set --parent ${tool.plugin} ${toolVersion}`)
+				const setResult = spawn.sync("asdf", ["set", "--parent", tool.plugin, toolVersion], {
 					stdio: "inherit",
 				})
 				if (setResult.status !== 0) {
@@ -368,7 +393,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					process.exit(1)
 				}
 			} else {
-				logInfo(`${tool.plugin} version ${tool.version} already set as current`)
+				logInfo(`${tool.plugin} version ${toolVersion} already set as current`)
 			}
 			const newVersion = getCommandOutput(tool.checkCmd, tool.checkArgs)
 			if (newVersion) {
