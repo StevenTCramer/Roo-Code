@@ -280,7 +280,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logInfo(`Installing ${runtime.plugin} via asdf...`)
 				spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
 				spawn.sync("asdf", ["install", runtime.plugin, runtime.version], { stdio: "inherit" })
-				spawn.sync("asdf", ["global", runtime.plugin, runtime.version], { stdio: "inherit" })
+				spawn.sync("asdf", ["set", "--parent", runtime.plugin, runtime.version], { stdio: "inherit" })
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
@@ -303,7 +303,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			logInfo(`Installing ${tool.plugin} via asdf...`)
 			spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
 			spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
-			spawn.sync("asdf", ["global", tool.plugin, tool.version], { stdio: "inherit" })
+			spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
 			logSuccess(`${tool.plugin} installed`)
 		}
 		if (selected.some((s) => s.includes("python"))) {
@@ -316,7 +316,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					stdio: "inherit",
 				})
 				spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
-				spawn.sync("asdf", ["global", "uv", "latest"], { stdio: "inherit" })
+				spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
 				logSuccess("uv installed")
 			}
 			const venvPath = path.resolve(__dirname, "..", ".venv")
