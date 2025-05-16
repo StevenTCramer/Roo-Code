@@ -11,8 +11,5 @@
 		"allowSyntheticDefaultImports": true,
 		"outDir": "dist"
 	},
-	"ts-node": {
-		"esm": true
-	},
 	"include": ["./*.ts"]
 }
