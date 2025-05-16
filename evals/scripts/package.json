@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"setup": "node --loader ts-node/esm setup.ts"
+		"setup": "tsc && node dist/setup.js"
 	},
 	"devDependencies": {
 		"@types/cross-spawn": "^6.0.6",
@@ -17,7 +17,7 @@
 		"inquirer": "^9.2.0",
 		"semver": "^7.6.3",
 		"sudo-prompt": "^9.2.1",
-		"ts-node": "^10.9.2",
 		"typescript": "^5.5.0"
-	}
+	},
+	"packageManager": "pnpm@latest"
 }
