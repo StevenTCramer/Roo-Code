@@ -465,11 +465,20 @@ function installVSCodeExtensions(): void {
 	logSuccess("VS Code extensions installed")
 }
 
+/**
+ * Ensures the cte/evals repository is cloned one directory above the project root.
+ * This avoids polluting the project directory and matches expected structure:
+ *   If project root is /home/user/Roo-Code, clone to /home/user/evals
+ */
 async function setupRepository(): Promise<void> {
-	const repoPath = path.resolve(__dirname, "..", "..", "..", "evals")
+	// __dirname = .../Roo-Code/evals/scripts
+	// projectRoot = .../Roo-Code
+	const projectRoot = path.resolve(__dirname, "..", "..")
+	const repoPath = path.resolve(projectRoot, "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
 
 	logInfo(`Checking for cte/evals repository at ${repoPath}...`)
+	logInfo(`(projectRoot resolved as: ${projectRoot})`)
 
 	try {
 		fs.accessSync(path.join(repoPath, ".git"))
