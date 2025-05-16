@@ -235,7 +235,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "java",
 			winget: "EclipseAdoptium.Temurin.17.JDK",
-			version: "openjdk-17",
+			version: "17",
 			checkCmd: "javac",
 			checkArgs: ["-version"],
 			url: "https://github.com/halcyon/asdf-java.git",
