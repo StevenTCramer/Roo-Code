@@ -1,6 +1,6 @@
 # Roo Benchmark (Evals) Setup
 
-This repository contains the setup scripts for the Roo Benchmark (Evals) project, which requires specific runtimes (Node.js 20.18.1, Python 3.13.2, Go 1.24.2, Rust 1.85.1, Java openjdk-17, .NET 8.0.401) and tools (`pnpm`, GitHub CLI, `uv`). The setup is cross-platform, supporting Windows, macOS, and Linux.
+This repository contains the setup scripts for the Roo Benchmark (Evals) project, which requires specific runtimes (Node.js 20.18.1, Python 3.13.2, Go 1.24.2, Rust 1.85.1, Java openjdk-17, .NET 9.0.300) and tools (`pnpm`, GitHub CLI, `uv`). The setup is cross-platform, supporting Windows, macOS, and Linux.
 
 ## Prerequisites
 
