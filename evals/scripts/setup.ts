@@ -259,12 +259,12 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			url: "https://github.com/jonathanmorley/asdf-pnpm.git",
 		},
 		{
-			plugin: "gh",
+			plugin: "github-cli",
 			winget: "GitHub.cli",
 			version: "latest",
 			checkCmd: "gh",
 			checkArgs: ["--version"],
-			url: "https://github.com/cli/asdf-gh.git",
+			url: "https://github.com/bartlomiejdanek/asdf-github-cli.git",
 		},
 	]
 
