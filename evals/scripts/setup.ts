@@ -235,7 +235,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "java",
 			winget: "EclipseAdoptium.Temurin.17.JDK",
-			version: ">=17",
+			version: "openjdk-17",
 			checkCmd: "javac",
 			checkArgs: ["-version"],
 			url: "https://github.com/halcyon/asdf-java.git",
@@ -279,8 +279,8 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				}
 				logInfo(`Installing ${runtime.plugin} via asdf...`)
 				spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
-				spawn.sync("asdf", ["install", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
-				spawn.sync("asdf", ["global", runtime.plugin, runtime.version.replace(/>=/, "")], { stdio: "inherit" })
+				spawn.sync("asdf", ["install", runtime.plugin, runtime.version], { stdio: "inherit" })
+				spawn.sync("asdf", ["global", runtime.plugin, runtime.version], { stdio: "inherit" })
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
 					logSuccess(`${runtime.plugin} installed (${newVersion})`)
