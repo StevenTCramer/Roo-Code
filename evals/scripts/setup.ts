@@ -659,6 +659,15 @@ async function buildExtension(): Promise<void> {
 	const { build } = await inquirer.prompt([{ type: "confirm", name: "build", message: "Build Roo Code extension?" }])
 	if (build) {
 		process.chdir(path.resolve(__dirname, "../.."))
+		// Ensure node_modules exists before running install scripts
+		if (!fs.existsSync("node_modules")) {
+			logInfo("node_modules not found. Running npm install...")
+			const installResult = spawn.sync("npm", ["install"], { stdio: "inherit" })
+			if (installResult.status !== 0) {
+				logError("npm install failed. Aborting build.")
+				process.exit(1)
+			}
+		}
 		fs.mkdirSync("bin", { recursive: true })
 		spawn.sync("npm", ["run", "install-extension"], { stdio: "inherit" })
 		spawn.sync("npm", ["run", "install-webview"], { stdio: "inherit" })
