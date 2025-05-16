@@ -317,28 +317,58 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		}
 		for (const tool of tools) {
 			const versionOutput = getCommandOutput(tool.checkCmd, tool.checkArgs)
-			if (versionOutput) {
+			// Check if asdf plugin is already added
+			const pluginListResult = spawn.sync("asdf", ["plugin", "list"], { encoding: "utf8" })
+			const pluginList =
+				pluginListResult.status === 0 ? pluginListResult.stdout.split("\n").map((s) => s.trim()) : []
+			const pluginAlreadyAdded = pluginList.includes(tool.plugin)
+			// Check if the tool/version is already installed
+			const asdfListResult = spawn.sync("asdf", ["list", tool.plugin], { encoding: "utf8" })
+			const asdfList = asdfListResult.status === 0 ? asdfListResult.stdout.split("\n").map((s) => s.trim()) : []
+			const versionAlreadyInstalled = asdfList.some((v) => v === tool.version || v === "latest")
+			// Check if the tool/version is already set as current
+			const asdfCurrentResult = spawn.sync("asdf", ["current", tool.plugin], { encoding: "utf8" })
+			const asdfCurrent = asdfCurrentResult.status === 0 ? asdfCurrentResult.stdout : ""
+			const versionAlreadySet = asdfCurrent.includes(tool.version) || asdfCurrent.includes("latest")
+
+			if (versionOutput && versionAlreadyInstalled && versionAlreadySet) {
 				logSuccess(`${tool.plugin} already installed (${versionOutput})`)
 				continue
 			}
 			logInfo(`Installing ${tool.plugin} via asdf...`)
-			logInfo(`Running: asdf plugin add ${tool.plugin} ${tool.url}`)
-			const pluginAddResult = spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
-			if (pluginAddResult.status !== 0) {
-				logError(`Failed to add asdf plugin for ${tool.plugin}`)
-				process.exit(1)
+			if (!pluginAlreadyAdded) {
+				logInfo(`Running: asdf plugin add ${tool.plugin} ${tool.url}`)
+				const pluginAddResult = spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], {
+					stdio: "inherit",
+				})
+				if (pluginAddResult.status !== 0) {
+					logError(`Failed to add asdf plugin for ${tool.plugin}`)
+					process.exit(1)
+				}
+			} else {
+				logInfo(`asdf plugin for ${tool.plugin} already added`)
 			}
-			logInfo(`Running: asdf install ${tool.plugin} ${tool.version}`)
-			const installResult = spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
-			if (installResult.status !== 0) {
-				logError(`Failed to install ${tool.plugin} via asdf`)
-				process.exit(1)
+			if (!versionAlreadyInstalled) {
+				logInfo(`Running: asdf install ${tool.plugin} ${tool.version}`)
+				const installResult = spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+				if (installResult.status !== 0) {
+					logError(`Failed to install ${tool.plugin} via asdf`)
+					process.exit(1)
+				}
+			} else {
+				logInfo(`${tool.plugin} version ${tool.version} already installed`)
 			}
-			logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
-			const setResult = spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
-			if (setResult.status !== 0) {
-				logError(`Failed to set ${tool.plugin} as parent in asdf`)
-				process.exit(1)
+			if (!versionAlreadySet) {
+				logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
+				const setResult = spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], {
+					stdio: "inherit",
+				})
+				if (setResult.status !== 0) {
+					logError(`Failed to set ${tool.plugin} as parent in asdf`)
+					process.exit(1)
+				}
+			} else {
+				logInfo(`${tool.plugin} version ${tool.version} already set as current`)
 			}
 			const newVersion = getCommandOutput(tool.checkCmd, tool.checkArgs)
 			if (newVersion) {
@@ -350,33 +380,59 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		}
 		if (selected.some((s) => s.includes("python"))) {
 			const uvVersion = getCommandOutput("uv", ["--version"])
-			if (uvVersion) {
+			// Check if asdf plugin is already added for uv
+			const pluginListResult = spawn.sync("asdf", ["plugin", "list"], { encoding: "utf8" })
+			const pluginList =
+				pluginListResult.status === 0 ? pluginListResult.stdout.split("\n").map((s) => s.trim()) : []
+			const pluginAlreadyAdded = pluginList.includes("uv")
+			// Check if uv is already installed
+			const asdfListResult = spawn.sync("asdf", ["list", "uv"], { encoding: "utf8" })
+			const asdfList = asdfListResult.status === 0 ? asdfListResult.stdout.split("\n").map((s) => s.trim()) : []
+			const versionAlreadyInstalled = asdfList.some((v) => v === "latest")
+			// Check if uv is already set as current
+			const asdfCurrentResult = spawn.sync("asdf", ["current", "uv"], { encoding: "utf8" })
+			const asdfCurrent = asdfCurrentResult.status === 0 ? asdfCurrentResult.stdout : ""
+			const versionAlreadySet = asdfCurrent.includes("latest")
+
+			if (uvVersion && versionAlreadyInstalled && versionAlreadySet) {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via asdf...")
-				logInfo("Running: asdf plugin add uv https://github.com/asdf-community/asdf-uv")
-				const pluginAddResult = spawn.sync(
-					"asdf",
-					["plugin", "add", "uv", "https://github.com/asdf-community/asdf-uv"],
-					{
-						stdio: "inherit",
-					},
-				)
-				if (pluginAddResult.status !== 0) {
-					logError("Failed to add asdf uv plugin")
-					return
+				if (!pluginAlreadyAdded) {
+					logInfo("Running: asdf plugin add uv https://github.com/asdf-community/asdf-uv")
+					const pluginAddResult = spawn.sync(
+						"asdf",
+						["plugin", "add", "uv", "https://github.com/asdf-community/asdf-uv"],
+						{
+							stdio: "inherit",
+						},
+					)
+					if (pluginAddResult.status !== 0) {
+						logError("Failed to add asdf uv plugin")
+						return
+					}
+				} else {
+					logInfo("asdf plugin for uv already added")
 				}
-				logInfo("Running: asdf install uv latest")
-				const installResult = spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
-				if (installResult.status !== 0) {
-					logError("Failed to install uv via asdf")
-					return
+				if (!versionAlreadyInstalled) {
+					logInfo("Running: asdf install uv latest")
+					const installResult = spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+					if (installResult.status !== 0) {
+						logError("Failed to install uv via asdf")
+						return
+					}
+				} else {
+					logInfo("uv version latest already installed")
 				}
-				logInfo("Running: asdf set --parent uv latest")
-				const setResult = spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
-				if (setResult.status !== 0) {
-					logError("Failed to set uv as parent in asdf")
-					return
+				if (!versionAlreadySet) {
+					logInfo("Running: asdf set --parent uv latest")
+					const setResult = spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
+					if (setResult.status !== 0) {
+						logError("Failed to set uv as parent in asdf")
+						return
+					}
+				} else {
+					logInfo("uv version latest already set as current")
 				}
 				logSuccess("uv installed")
 			}
