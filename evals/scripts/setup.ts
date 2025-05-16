@@ -354,10 +354,10 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via asdf...")
-				logInfo("Running: asdf plugin add uv https://github.com/owengenix/asdf-uv.git")
+				logInfo("Running: asdf plugin add uv https://github.com/asdf-community/asdf-uv")
 				const pluginAddResult = spawn.sync(
 					"asdf",
-					["plugin", "add", "uv", "https://github.com/owengenix/asdf-uv.git"],
+					["plugin", "add", "uv", "https://github.com/asdf-community/asdf-uv"],
 					{
 						stdio: "inherit",
 					},
