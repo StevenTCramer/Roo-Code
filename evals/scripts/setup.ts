@@ -227,7 +227,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "rust",
 			winget: "Rustlang.Rustup",
-			version: ">=1.85.1",
+			version: "1.85.1",
 			checkCmd: "rustc",
 			checkArgs: ["--version"],
 			url: "https://github.com/asdf-community/asdf-rust.git",
