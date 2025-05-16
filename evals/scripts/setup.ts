@@ -608,7 +608,7 @@ async function buildExtension(): Promise<void> {
 async function main(): Promise<void> {
 	logInfo("Starting Roo Code Evals Setup...")
 	const os = getOS()
-	installPowerShell(os)
+	// installPowerShell(os)
 	installPackageManager(os)
 	await setupRepository()
 	const selected = await selectLanguages()
