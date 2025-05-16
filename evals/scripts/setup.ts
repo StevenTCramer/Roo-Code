@@ -219,7 +219,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 		{
 			plugin: "golang",
 			winget: "GoLang.Go",
-			version: ">=1.24.2",
+			version: "1.24.2",
 			checkCmd: "go",
 			checkArgs: ["version"],
 			url: "https://github.com/asdf-community/asdf-golang.git",
