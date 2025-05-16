@@ -474,7 +474,8 @@ async function setupRepository(): Promise<void> {
 			spawn.sync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
 			logSuccess(`Cloned cte/evals to ${repoPath}`)
 		} catch (error) {
-			logError(`Failed to clone cte/evals: ${error.message}`)
+			const msg = error instanceof Error ? error.message : String(error)
+			logError(`Failed to clone cte/evals: ${msg}`)
 			process.exit(1)
 		}
 	}
