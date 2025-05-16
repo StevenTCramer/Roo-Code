@@ -741,6 +741,7 @@ async function buildExtension(): Promise<void> {
 	const { build } = await inquirer.prompt([{ type: "confirm", name: "build", message: "Build Roo Code extension?" }])
 	if (build) {
 		process.chdir(path.resolve(__dirname, "../.."))
+		console.log("CWD before npm install:", process.cwd())
 		// Ensure node_modules exists before running install scripts
 		if (!fs.existsSync("node_modules")) {
 			logInfo("node_modules not found. Running npm install...")
@@ -751,10 +752,15 @@ async function buildExtension(): Promise<void> {
 			}
 		}
 		fs.mkdirSync("bin", { recursive: true })
+		console.log("CWD before npm run install-extension:", process.cwd())
 		spawn.sync("npm", ["run", "install-extension"], { stdio: "inherit" })
+		console.log("CWD before npm run install-webview:", process.cwd())
 		spawn.sync("npm", ["run", "install-webview"], { stdio: "inherit" })
+		console.log("CWD before npm run install-e2e:", process.cwd())
 		spawn.sync("npm", ["run", "install-e2e"], { stdio: "inherit" })
+		console.log("CWD before npx vsce package:", process.cwd())
 		spawn.sync("npx", ["vsce", "package", "--out", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
+		console.log("CWD before code --install-extension:", process.cwd())
 		spawn.sync("code", ["--install-extension", "bin/roo-code-latest.vsix"], { stdio: "inherit" })
 		process.chdir(path.resolve(__dirname, ".."))
 		logSuccess("Roo Code extension built and installed")
