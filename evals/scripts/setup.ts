@@ -278,8 +278,11 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					continue
 				}
 				logInfo(`Installing ${runtime.plugin} via asdf...`)
+				logInfo(`Running: asdf plugin add ${runtime.plugin} ${runtime.url}`)
 				spawn.sync("asdf", ["plugin", "add", runtime.plugin, runtime.url], { stdio: "inherit" })
+				logInfo(`Running: asdf install ${runtime.plugin} ${runtime.version}`)
 				spawn.sync("asdf", ["install", runtime.plugin, runtime.version], { stdio: "inherit" })
+				logInfo(`Running: asdf set --parent ${runtime.plugin} ${runtime.version}`)
 				spawn.sync("asdf", ["set", "--parent", runtime.plugin, runtime.version], { stdio: "inherit" })
 				const newVersion = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (newVersion && checkVersion(newVersion, runtime.version)) {
@@ -301,8 +304,11 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				continue
 			}
 			logInfo(`Installing ${tool.plugin} via asdf...`)
+			logInfo(`Running: asdf plugin add ${tool.plugin} ${tool.url}`)
 			spawn.sync("asdf", ["plugin", "add", tool.plugin, tool.url], { stdio: "inherit" })
+			logInfo(`Running: asdf install ${tool.plugin} ${tool.version}`)
 			spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
+			logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
 			spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
 			logSuccess(`${tool.plugin} installed`)
 		}
@@ -312,10 +318,13 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 				logSuccess(`uv already installed (${uvVersion})`)
 			} else {
 				logInfo("Installing uv via asdf...")
+				logInfo("Running: asdf plugin add uv https://github.com/owenthereal/asdf-uv.git")
 				spawn.sync("asdf", ["plugin", "add", "uv", "https://github.com/owenthereal/asdf-uv.git"], {
 					stdio: "inherit",
 				})
+				logInfo("Running: asdf install uv latest")
 				spawn.sync("asdf", ["install", "uv", "latest"], { stdio: "inherit" })
+				logInfo("Running: asdf set --parent uv latest")
 				spawn.sync("asdf", ["set", "--parent", "uv", "latest"], { stdio: "inherit" })
 				logSuccess("uv installed")
 			}
