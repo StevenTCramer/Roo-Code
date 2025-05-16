@@ -264,7 +264,7 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			version: "latest",
 			checkCmd: "gh",
 			checkArgs: ["--version"],
-			url: "https://github.com/younke/asdf-gh.git",
+			url: "https://github.com/cli/asdf-gh.git",
 		},
 	]
 
@@ -310,7 +310,13 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			spawn.sync("asdf", ["install", tool.plugin, tool.version], { stdio: "inherit" })
 			logInfo(`Running: asdf set --parent ${tool.plugin} ${tool.version}`)
 			spawn.sync("asdf", ["set", "--parent", tool.plugin, tool.version], { stdio: "inherit" })
-			logSuccess(`${tool.plugin} installed`)
+			const newVersion = getCommandOutput(tool.checkCmd, tool.checkArgs)
+			if (newVersion) {
+				logSuccess(`${tool.plugin} installed (${newVersion})`)
+			} else {
+				logError(`${tool.plugin} installation failed: not found or not installed`)
+				process.exit(1)
+			}
 		}
 		if (selected.some((s) => s.includes("python"))) {
 			const uvVersion = getCommandOutput("uv", ["--version"])
