@@ -249,11 +249,12 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 			url: "https://github.com/hensou/asdf-dotnet.git",
 		},
 	]
+
 	const tools = [
 		{
 			plugin: "pnpm",
 			winget: "pnpm.pnpm",
-			version: "latest",
+			version: "10.11.0",
 			checkCmd: "pnpm",
 			checkArgs: ["--version"],
 			url: "https://github.com/jonathanmorley/asdf-pnpm.git",
