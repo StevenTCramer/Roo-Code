@@ -740,7 +740,7 @@ async function buildExtension(): Promise<void> {
 	logInfo("Building Roo Code extension...")
 	const { build } = await inquirer.prompt([{ type: "confirm", name: "build", message: "Build Roo Code extension?" }])
 	if (build) {
-		process.chdir(path.resolve(__dirname, "../.."))
+		process.chdir(path.resolve(__dirname, "../../.."))
 		console.log("CWD before npm install:", process.cwd())
 		// Ensure node_modules exists before running install scripts
 		if (!fs.existsSync("node_modules")) {
