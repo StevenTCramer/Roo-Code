@@ -473,6 +473,8 @@ function installVSCodeExtensions(): void {
 async function setupRepository(): Promise<void> {
 	// __dirname = .../Roo-Code/evals/scripts
 	// projectRoot = .../Roo-Code
+	logInfo(`(__filename: ${__filename})`)
+	logInfo(`(__dirname: ${__dirname})`)
 	const projectRoot = path.resolve(__dirname, "..", "..")
 	const repoPath = path.resolve(projectRoot, "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
