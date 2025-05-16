@@ -475,7 +475,7 @@ async function setupRepository(): Promise<void> {
 	// projectRoot = .../Roo-Code
 	logInfo(`(__filename: ${__filename})`)
 	logInfo(`(__dirname: ${__dirname})`)
-	const projectRoot = path.resolve(__dirname, "..", "..")
+	const projectRoot = path.resolve(__dirname, "..", "..", "..")
 	const repoPath = path.resolve(projectRoot, "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
 
@@ -491,8 +491,13 @@ async function setupRepository(): Promise<void> {
 		logWarning(`Repository not found at ${repoPath}.`)
 		try {
 			fs.mkdirSync(path.dirname(repoPath), { recursive: true })
-			spawn.sync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
-			logSuccess(`Cloned cte/evals to ${repoPath}`)
+			const cloneResult = spawn.sync("git", ["clone", repoUrl, repoPath], { stdio: "inherit" })
+			if (cloneResult.status === 0) {
+				logSuccess(`Cloned cte/evals to ${repoPath}`)
+			} else {
+				logError(`Failed to clone cte/evals to ${repoPath}`)
+				process.exit(1)
+			}
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error)
 			logError(`Failed to clone cte/evals: ${msg}`)
