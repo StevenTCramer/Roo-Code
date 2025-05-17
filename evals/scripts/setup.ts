@@ -12,10 +12,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const evalsRoot = path.resolve(__dirname, "..", "..")
 const workspaceRoot = path.resolve(__dirname, "..", "..", "..")
+const dataDir = path.join(evalsRoot, "data")
 console.log("DEBUG __filename:", __filename)
 console.log("DEBUG __dirname:", __dirname)
 console.log("DEBUG evalsRoot:", evalsRoot)
 console.log("DEBUG workspaceRoot:", workspaceRoot)
+console.log("DEBUG dataDir:", dataDir)
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
@@ -706,7 +708,6 @@ async function setupEnvironment(selectedLangs: string[]): Promise<void> {
 
 async function setupDatabase(): Promise<void> {
 	logInfo("Setting up database...")
-	const dataDir = path.resolve(__dirname, "..", "data")
 	fs.mkdirSync(dataDir, { recursive: true })
 	logSuccess(`Ensured data directory exists at ${dataDir}`)
 
