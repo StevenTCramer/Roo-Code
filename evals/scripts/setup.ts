@@ -272,7 +272,10 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 	logInfo("Installing runtimes and tools...")
 	if (os !== "Windows" && installAsdf(os)) {
 		for (const runtime of runtimes) {
-			if (selected.some((s) => s.includes(runtime.plugin))) {
+			// Find the selected entry for this runtime, e.g. "java openjdk-17"
+			const selectedEntry = selected.find((s) => s.startsWith(`${runtime.plugin} `))
+			if (selectedEntry) {
+				const asdfVersion = selectedEntry.split(" ")[1] || runtime.version
 				const versionOutput = getCommandOutput(runtime.checkCmd, runtime.checkArgs)
 				if (versionOutput && checkVersion(versionOutput, runtime.version)) {
 					logSuccess(`${runtime.plugin} already installed with compatible version (${versionOutput})`)
@@ -287,16 +290,16 @@ function installRuntimesAndTools(os: string, selected: string[]): void {
 					logError(`Failed to add asdf plugin for ${runtime.plugin}`)
 					process.exit(1)
 				}
-				logInfo(`Running: asdf install ${runtime.plugin} ${runtime.version}`)
-				const installResult = spawn.sync("asdf", ["install", runtime.plugin, runtime.version], {
+				logInfo(`Running: asdf install ${runtime.plugin} ${asdfVersion}`)
+				const installResult = spawn.sync("asdf", ["install", runtime.plugin, asdfVersion], {
 					stdio: "inherit",
 				})
 				if (installResult.status !== 0) {
 					logError(`Failed to install ${runtime.plugin} via asdf`)
 					process.exit(1)
 				}
-				logInfo(`Running: asdf set --parent ${runtime.plugin} ${runtime.version}`)
-				const setResult = spawn.sync("asdf", ["set", "--parent", runtime.plugin, runtime.version], {
+				logInfo(`Running: asdf set --parent ${runtime.plugin} ${asdfVersion}`)
+				const setResult = spawn.sync("asdf", ["set", "--parent", runtime.plugin, asdfVersion], {
 					stdio: "inherit",
 				})
 				if (setResult.status !== 0) {
@@ -727,6 +730,9 @@ async function startWebApp(): Promise<void> {
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
 		logInfo("Starting evals web app...")
+		console.log("About to run command: pnpm web")
+		console.log("process.cwd():", process.cwd())
+		console.log("cwd option for spawn:", EVALS_DIR)
 		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit", cwd: EVALS_DIR })
 		if (result.status === 0) {
 			logSuccess("Evals web app started")
