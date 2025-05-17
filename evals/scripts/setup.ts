@@ -11,6 +11,7 @@ import { spawnSync } from "child_process"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const EVALS_DIR = path.resolve(__dirname, "..")
+const projectRoot = path.resolve(__dirname, "..", "..", "..")
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
@@ -620,7 +621,6 @@ async function setupRepository(): Promise<void> {
 	// projectRoot = .../Roo-Code
 	logInfo(`(__filename: ${__filename})`)
 	logInfo(`(__dirname: ${__dirname})`)
-	const projectRoot = path.resolve(__dirname, "..", "..", "..")
 	const repoPath = path.resolve(projectRoot, "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
 
