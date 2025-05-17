@@ -239,12 +239,19 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 
 	logToConsoleAndFile(`${Date.now()} [cli#runExercise] Opening new VS Code window at ${workspacePath}`)
 
-	await execa({
+	const isLinux = os.platform() === "linux"
+	const codeCmd = isLinux
+		? `xvfb-run -a code --disable-workspace-trust -n ${workspacePath}`
+		: `code --disable-workspace-trust -n ${workspacePath}`
+
+	logToConsoleAndFile(`${Date.now()} [cli#runExercise] VSCode launch command: ${codeCmd}`)
+
+	await execa(codeCmd, {
 		env: {
 			ROO_CODE_IPC_SOCKET_PATH: taskSocketPath,
 		},
-		shell: os.platform() === "win32" ? true : "/bin/bash", // Use appropriate shell based on OS
-	})`code --disable-workspace-trust -n ${workspacePath}`
+		shell: true, // Always use shell for string command
+	})
 
 	// Give VSCode some time to spawn before connecting to its unix socket.
 	await new Promise((resolve) => setTimeout(resolve, 3_000))
