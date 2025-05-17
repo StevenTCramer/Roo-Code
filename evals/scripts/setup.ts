@@ -12,6 +12,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const EVALS_DIR = path.resolve(__dirname, "..")
 const projectRoot = path.resolve(__dirname, "..", "..", "..")
+console.log("DEBUG __filename:", __filename)
+console.log("DEBUG __dirname:", __dirname)
+console.log("DEBUG EVALS_DIR:", EVALS_DIR)
+console.log("DEBUG projectRoot:", projectRoot)
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
