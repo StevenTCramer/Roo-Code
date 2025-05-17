@@ -10,12 +10,12 @@ import { fileURLToPath } from "url"
 import { spawnSync } from "child_process"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const EVALS_DIR = path.resolve(__dirname, "..", "..")
-const projectRoot = path.resolve(__dirname, "..", "..", "..")
+const evalsRoot = path.resolve(__dirname, "..", "..")
+const workspaceRoot = path.resolve(__dirname, "..", "..", "..")
 console.log("DEBUG __filename:", __filename)
 console.log("DEBUG __dirname:", __dirname)
-console.log("DEBUG EVALS_DIR:", EVALS_DIR)
-console.log("DEBUG projectRoot:", projectRoot)
+console.log("DEBUG evalsRoot:", evalsRoot)
+console.log("DEBUG workspaceRoot:", workspaceRoot)
 // Helper: Refresh process.env.PATH from Windows registry after winget install
 function refreshProcessEnvPathFromRegistry() {
 	if (getOS() !== "Windows") return
@@ -622,14 +622,14 @@ function installVSCodeExtensions(): void {
  */
 async function setupRepository(): Promise<void> {
 	// __dirname = .../Roo-Code/evals/scripts
-	// projectRoot = .../Roo-Code
+	// workspaceRoot = .../Roo-Code
 	logInfo(`(__filename: ${__filename})`)
 	logInfo(`(__dirname: ${__dirname})`)
-	const repoPath = path.resolve(projectRoot, "..", "evals")
+	const repoPath = path.resolve(workspaceRoot, "..", "evals")
 	const repoUrl = "https://github.com/cte/evals.git"
 
 	logInfo(`Checking for cte/evals repository at ${repoPath}...`)
-	logInfo(`(projectRoot resolved as: ${projectRoot})`)
+	logInfo(`(workspaceRoot resolved as: ${workspaceRoot})`)
 
 	try {
 		fs.accessSync(path.join(repoPath, ".git"))
@@ -736,8 +736,8 @@ async function startWebApp(): Promise<void> {
 		logInfo("Starting evals web app...")
 		console.log("About to run command: pnpm web")
 		console.log("process.cwd():", process.cwd())
-		console.log("cwd option for spawn:", EVALS_DIR)
-		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit", cwd: EVALS_DIR })
+		console.log("cwd option for spawn:", evalsRoot)
+		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit", cwd: evalsRoot })
 		if (result.status === 0) {
 			logSuccess("Evals web app started")
 		} else {
