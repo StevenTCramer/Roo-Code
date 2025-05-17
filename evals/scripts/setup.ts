@@ -10,7 +10,7 @@ import { fileURLToPath } from "url"
 import { spawnSync } from "child_process"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const EVALS_DIR = path.resolve(__dirname, "..")
+const EVALS_DIR = path.resolve(__dirname, "..", "..")
 const projectRoot = path.resolve(__dirname, "..", "..", "..")
 console.log("DEBUG __filename:", __filename)
 console.log("DEBUG __dirname:", __dirname)
