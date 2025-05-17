@@ -1,6 +1,6 @@
 # Running Roo Benchmarks
 
-This guide provides instructions to set up the Roo Benchmarks repository on a clean Ubuntu 25 Server, using `asdf` v0.16.7 to manage Node.js 20.18.1 and `pnpm` 10.11.0. It compiles TypeScript (`setup.ts`) to JavaScript for execution using the project's local `typescript` dependency.
+This guide provides instructions to set up the prerequisites for the Roo Benchmarks repository on a clean Ubuntu 25 Server, using `asdf` v0.16.7 to manage Node.js 20.18.1 and `pnpm` 10.11.0. It compiles TypeScript (`setup.ts`) to JavaScript for execution using the project's local `typescript` dependency. It also includes steps to install Visual Studio Code (VS Code), Xvfb, and the `micro` text editor as prerequisites for the benchmarks.
 
 ## Prerequisites
 - Clean Ubuntu 25 Server installation.
@@ -16,9 +16,9 @@ sudo apt update && sudo apt upgrade -y
 ```
 
 ### 2. Install Dependencies
-Install tools required for `asdf` and Node.js:
+Install tools required for `asdf`, Node.js, VS Code, Xvfb, and the `micro` text editor:
 ```bash
-sudo apt install -y curl git build-essential libssl-dev zlib1g-dev
+sudo apt install -y curl git build-essential libssl-dev zlib1g-dev xvfb gnupg2 apt-transport-https micro
 ```
 
 ### 3. Install `asdf`
@@ -42,7 +42,6 @@ Set the `ASDF_DATA_DIR` environment variable and add `asdf` shims and binary to 
 ```bash
 echo 'export ASDF_DATA_DIR="$HOME/.asdf"' >> ~/.bashrc
 echo 'export PATH="$ASDF_DATA_DIR/shims:$HOME/bin:$PATH"' >> ~/.bashrc
-echo '. "$ASDF_DATA_DIR/asdf.sh"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -84,7 +83,39 @@ Verify:
 pnpm --version  # Outputs 10.11.0
 ```
 
-### 6. Set Up the Roo Benchmarks Repository
+### 6. Install Visual Studio Code (VS Code)
+Add the Microsoft GPG key and repository for VS Code:
+```bash
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+rm packages.microsoft.gpg
+```
+
+Update package lists and install VS Code:
+```bash
+sudo apt update
+sudo apt install -y code
+```
+
+Verify:
+```bash
+code --version  # Outputs the installed VS Code version
+```
+
+### 7. Configure Xvfb
+Ensure Xvfb is installed (included in step 2) and start a virtual display:
+```bash
+Xvfb :99 -screen 0 1280x720x24 &
+export DISPLAY=:99
+```
+
+Verify Xvfb is running:
+```bash
+ps aux | grep Xvfb  # Should show the Xvfb process
+```
+
+### 8. Set Up the Roo Benchmarks Repository
 Clone the Roo Benchmarks repository (use your GitHub username for private repositories or SSH if required):
 ```bash
 git clone https://github.com/StevenTCramer/Roo-Code.git
@@ -96,7 +127,8 @@ Install dependencies:
 pnpm install
 ```
 
-Run the benchmarks setup:
+### 9. Running the Benchmarks Setup
+Run the benchmarks setup to install all prerequisites:
 ```bash
 pnpm run setup
 ```
