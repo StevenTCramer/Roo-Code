@@ -78,13 +78,12 @@ echo "Configuring asdf environment for roocodeuser..."
 if ! grep -q 'ASDF_DATA_DIR' "$ROOCODEUSER_HOME/.bashrc"; then
   echo "export ASDF_DATA_DIR=\"$ROOCODEUSER_HOME/.asdf\"" >> "$ROOCODEUSER_HOME/.bashrc"
   echo "export PATH=\"$ROOCODEUSER_HOME/.asdf/shims:$ROOCODEUSER_HOME/bin:\$PATH\"" >> "$ROOCODEUSER_HOME/.bashrc"
-  echo ". $ROOCODEUSER_HOME/bin/asdf.sh" >> "$ROOCODEUSER_HOME/.bashrc"
 fi
 chown roocodeuser:roocodeuser "$ROOCODEUSER_HOME/.bashrc"
 
 # Verify asdf installation
 echo "Verifying asdf installation for roocodeuser..."
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf --version" > "$ROOCODEUSER_HOME/asdf-verify.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf --version" > "$ROOCODEUSER_HOME/asdf-verify.log" 2>&1 || {
   echo "Error: asdf verification failed. See $ROOCODEUSER_HOME/asdf-verify.log"
   cat "$ROOCODEUSER_HOME/asdf-verify.log"
   exit 1
@@ -92,17 +91,17 @@ su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/as
 
 # Install Node.js 20.18.1 for roocodeuser
 echo "Installing Node.js 20.18.1 via asdf for roocodeuser..."
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || true" > "$ROOCODEUSER_HOME/asdf-nodejs-plugin.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || true" > "$ROOCODEUSER_HOME/asdf-nodejs-plugin.log" 2>&1 || {
   echo "Error: Failed to add nodejs plugin. See $ROOCODEUSER_HOME/asdf-nodejs-plugin.log"
   cat "$ROOCODEUSER_HOME/asdf-nodejs-plugin.log"
   exit 1
 }
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf install nodejs 20.18.1" > "$ROOCODEUSER_HOME/asdf-nodejs-install.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf install nodejs 20.18.1" > "$ROOCODEUSER_HOME/asdf-nodejs-install.log" 2>&1 || {
   echo "Error: Failed to install Node.js 20.18.1. See $ROOCODEUSER_HOME/asdf-nodejs-install.log"
   cat "$ROOCODEUSER_HOME/asdf-nodejs-install.log"
   exit 1
 }
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf global nodejs 20.18.1" > "$ROOCODEUSER_HOME/asdf-nodejs-global.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf global nodejs 20.18.1" > "$ROOCODEUSER_HOME/asdf-nodejs-global.log" 2>&1 || {
   echo "Error: Failed to set Node.js global version. See $ROOCODEUSER_HOME/asdf-nodejs-global.log"
   cat "$ROOCODEUSER_HOME/asdf-nodejs-global.log"
   exit 1
@@ -110,29 +109,29 @@ su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/as
 
 # Verify Node.js
 echo "Node.js version for roocodeuser:"
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && node --version" || {
+su - roocodeuser -c "node --version" || {
   echo "Error: Node.js verification failed"
   exit 1
 }
 echo "npm version for roocodeuser:"
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && npm --version" || {
+su - roocodeuser -c "npm --version" || {
   echo "Error: npm verification failed"
   exit 1
 }
 
 # Install pnpm 10.11.0 for roocodeuser
 echo "Installing pnpm 10.11.0 via asdf for roocodeuser..."
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf plugin add pnpm https://github.com/jonathanmorley/asdf-pnpm.git || true" > "$ROOCODEUSER_HOME/asdf-pnpm-plugin.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf plugin add pnpm https://github.com/jonathanmorley/asdf-pnpm.git || true" > "$ROOCODEUSER_HOME/asdf-pnpm-plugin.log" 2>&1 || {
   echo "Error: Failed to add pnpm plugin. See $ROOCODEUSER_HOME/asdf-pnpm-plugin.log"
   cat "$ROOCODEUSER_HOME/asdf-pnpm-plugin.log"
   exit 1
 }
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf install pnpm 10.11.0" > "$ROOCODEUSER_HOME/asdf-pnpm-install.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf install pnpm 10.11.0" > "$ROOCODEUSER_HOME/asdf-pnpm-install.log" 2>&1 || {
   echo "Error: Failed to install pnpm 10.11.0. See $ROOCODEUSER_HOME/asdf-pnpm-install.log"
   cat "$ROOCODEUSER_HOME/asdf-pnpm-install.log"
   exit 1
 }
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/asdf global pnpm 10.11.0" > "$ROOCODEUSER_HOME/asdf-pnpm-global.log" 2>&1 || {
+su - roocodeuser -c "$ROOCODEUSER_HOME/bin/asdf global pnpm 10.11.0" > "$ROOCODEUSER_HOME/asdf-pnpm-global.log" 2>&1 || {
   echo "Error: Failed to set pnpm global version. See $ROOCODEUSER_HOME/asdf-pnpm-global.log"
   cat "$ROOCODEUSER_HOME/asdf-pnpm-global.log"
   exit 1
@@ -140,7 +139,7 @@ su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && $ROOCODEUSER_HOME/bin/as
 
 # pnpm setup
 echo "Running pnpm setup for roocodeuser..."
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && pnpm setup" > "$ROOCODEUSER_HOME/pnpm-setup.log" 2>&1 || {
+su - roocodeuser -c "pnpm setup" > "$ROOCODEUSER_HOME/pnpm-setup.log" 2>&1 || {
   echo "Error: pnpm setup failed. See $ROOCODEUSER_HOME/pnpm-setup.log"
   cat "$ROOCODEUSER_HOME/pnpm-setup.log"
   exit 1
@@ -148,7 +147,7 @@ su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && pnpm setup" > "$ROOCODEU
 
 # Verify pnpm
 echo "pnpm version for roocodeuser:"
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && pnpm --version" || {
+su - roocodeuser -c "pnpm --version" || {
   echo "Error: pnpm verification failed"
   exit 1
 }
@@ -180,7 +179,7 @@ chown -R roocodeuser:roocodeuser "$ROOCODEUSER_HOME/Roo-Code"
 # Install dependencies
 echo "Installing project dependencies with pnpm for roocodeuser..."
 cd "$ROOCODEUSER_HOME/Roo-Code/evals/scripts"
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && pnpm install" > "$ROOCODEUSER_HOME/pnpm-install.log" 2>&1 || {
+su - roocodeuser -c "pnpm install" > "$ROOCODEUSER_HOME/pnpm-install.log" 2>&1 || {
   echo "Error: pnpm install failed. See $ROOCODEUSER_HOME/pnpm-install.log"
   cat "$ROOCODEUSER_HOME/pnpm-install.log"
   exit 1
@@ -188,7 +187,7 @@ su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && pnpm install" > "$ROOCOD
 
 # Run the benchmarks setup
 echo "Running benchmarks setup for roocodeuser..."
-su - roocodeuser -c ". $ROOCODEUSER_HOME/bin/asdf.sh && cd $ROOCODEUSER_HOME/Roo-Code/evals/scripts && pnpm run setup" > "$ROOCODEUSER_HOME/pnpm-setup-run.log" 2>&1 || {
+su - roocodeuser -c "cd $ROOCODEUSER_HOME/Roo-Code/evals/scripts && pnpm run setup" > "$ROOCODEUSER_HOME/pnpm-setup-run.log" 2>&1 || {
   echo "Error: pnpm run setup failed. See $ROOCODEUSER_HOME/pnpm-setup-run.log"
   cat "$ROOCODEUSER_HOME/pnpm-setup-run.log"
   exit 1
