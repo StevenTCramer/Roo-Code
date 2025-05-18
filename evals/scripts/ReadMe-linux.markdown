@@ -103,18 +103,6 @@ Verify:
 code --version  # Outputs the installed VS Code version
 ```
 
-### 7. Configure Xvfb
-Ensure Xvfb is installed (included in step 2) and start a virtual display:
-```bash
-Xvfb :99 -screen 0 1280x720x24 &
-export DISPLAY=:99
-```
-
-Verify Xvfb is running:
-```bash
-ps aux | grep Xvfb  # Should show the Xvfb process
-```
-
 ### 8. Set Up the Roo Benchmarks Repository
 Clone the Roo Benchmarks repository (use your GitHub username for private repositories or SSH if required):
 ```bash
