@@ -7,22 +7,19 @@ set -euo pipefail
 # Create flag file to ensure single execution
 touch "$HOME/.first_login_done"
 
-# Log output to file
-exec > >(tee -a "$HOME/first_login.log") 2>&1
-
 echo "Starting first login setup for roocodeuser..."
 
-# Log initial PATH
-echo "Initial PATH: $PATH" > "$HOME/env-debug.log"
+# Echo initial PATH
+echo "Initial PATH: $PATH"
 
 # Test PATH modification
 export PATH="/tmp:$PATH"
-echo "Test PATH: $PATH" > "$HOME/env-test-debug.log"
+echo "Test PATH: $PATH"
 
 # Set PATH for script
 export PATH="/usr/bin:$HOME/bin:$HOME/.asdf/shims:$PATH"
 hash -r
-echo "Script PATH: $PATH" >> "$HOME/env-debug.log"
+echo "Script PATH: $PATH"
 
 # Install Visual Studio Code (VS Code)
 echo "Installing Visual Studio Code..."
@@ -31,18 +28,15 @@ sudo install -o root -g root -m 644 "$HOME/packages.microsoft.gpg" /etc/apt/trus
 sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
 rm "$HOME/packages.microsoft.gpg"
 sudo apt update
-sudo apt install -y code > "$HOME/vscode-install.log" 2>&1 || {
-  echo "Error: VS Code installation failed. See $HOME/vscode-install.log"
-  cat "$HOME/vscode-install.log"
+sudo apt install -y code || {
+  echo "Error: VS Code installation failed"
   exit 1;
 }
 
 # Verify VS Code
 echo "VS Code version:"
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; which code >> $HOME/vscode-env-debug.log; code --version" | head -n 1 > "$HOME/vscode-verify.log" 2>&1 || {
-  echo "Error: VS Code verification failed. See $HOME/vscode-verify.log and $HOME/vscode-env-debug.log"
-  cat "$HOME/vscode-verify.log"
-  cat "$HOME/vscode-env-debug.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; which code; code --version" || {
+  echo "Error: VS Code verification failed"
   exit 1;
 }
 
@@ -74,7 +68,7 @@ chmod +x "$HOME/bin/asdf" || {
 
 # Debug asdf executable
 echo "Listing asdf executable..."
-ls -l "$HOME/bin/asdf" > "$HOME/asdf-executable-debug.log" 2>&1 || {
+ls -l "$HOME/bin/asdf" || {
   echo "Error: Failed to list asdf executable"
   exit 1;
 }
@@ -94,95 +88,80 @@ fi
 
 # Verify asdf installation
 echo "Verifying asdf installation..."
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; which asdf >> $HOME/asdf-env-debug.log; asdf --version" > "$HOME/asdf-verify.log" 2>&1 || {
-  echo "Error: asdf verification failed. See $HOME/asdf-verify.log and $HOME/asdf-env-debug.log"
-  cat "$HOME/asdf-verify.log"
-  cat "$HOME/asdf-env-debug.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; which asdf; asdf --version" || {
+  echo "Error: asdf verification failed"
   exit 1;
 }
 
 # Install Node.js 20.18.1
 echo "Installing Node.js 20.18.1 via asdf..."
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || true" > "$HOME/asdf-nodejs-plugin.log" 2>&1 || {
-  echo "Error: Failed to add nodejs plugin. See $HOME/asdf-nodejs-plugin.log"
-  cat "$HOME/asdf-nodejs-plugin.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || true" || {
+  echo "Error: Failed to add nodejs plugin"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf install nodejs 20.18.1" > "$HOME/asdf-nodejs-install.log" 2>&1 || {
-  echo "Error: Failed to install Node.js 20.18.1. See $HOME/asdf-nodejs-install.log"
-  cat "$HOME/asdf-nodejs-install.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf install nodejs 20.18.1" || {
+  echo "Error: Failed to install Node.js 20.18.1"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf set -u nodejs 20.18.1" > "$HOME/asdf-nodejs-global.log" 2>&1 || {
-  echo "Error: Failed to set Node.js global version. See $HOME/asdf-nodejs-global.log"
-  cat "$HOME/asdf-nodejs-global.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf set -u nodejs 20.18.1" || {
+  echo "Error: Failed to set Node.js global version"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf reshim nodejs" > "$HOME/asdf-nodejs-reshim.log" 2>&1 || {
-  echo "Error: Failed to reshim Node.js. See $HOME/asdf-nodejs-reshim.log"
-  cat "$HOME/asdf-nodejs-reshim.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf reshim nodejs" || {
+  echo "Error: Failed to reshim Node.js"
   exit 1;
 }
 
 # Verify Node.js
 echo "Node.js version:"
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; node --version" > "$HOME/node-verify.log" 2>&1 || {
-  echo "Error: Node.js verification failed. See $HOME/node-verify.log"
-  cat "$HOME/node-verify.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; node --version" || {
+  echo "Error: Node.js verification failed"
   exit 1;
 }
 echo "npm version:"
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; npm --version" > "$HOME/npm-verify.log" 2>&1 || {
-  echo "Error: npm verification failed. See $HOME/npm-verify.log"
-  cat "$HOME/npm-verify.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; npm --version" || {
+  echo "Error: npm verification failed"
   exit 1;
 }
 
 # Install pnpm 10.11.0
 echo "Installing pnpm 10.11.0 via asdf..."
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf plugin add pnpm https://github.com/jonathanmorley/asdf-pnpm.git || true" > "$HOME/asdf-pnpm-plugin.log" 2>&1 || {
-  echo "Error: Failed to add pnpm plugin. See $HOME/asdf-pnpm-plugin.log"
-  cat "$HOME/asdf-pnpm-plugin.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf plugin add pnpm https://github.com/jonathanmorley/asdf-pnpm.git || true" || {
+  echo "Error: Failed to add pnpm plugin"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf install pnpm 10.11.0" > "$HOME/asdf-pnpm-install.log" 2>&1 || {
-  echo "Error: Failed to install pnpm 10.11.0. See $HOME/asdf-pnpm-install.log"
-  cat "$HOME/asdf-pnpm-install.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf install pnpm 10.11.0" || {
+  echo "Error: Failed to install pnpm 10.11.0"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf set -u pnpm 10.11.0" > "$HOME/asdf-pnpm-global.log" 2>&1 || {
-  echo "Error: Failed to set pnpm global version. See $HOME/asdf-pnpm-global.log"
-  cat "$HOME/asdf-pnpm-global.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf set -u pnpm 10.11.0" || {
+  echo "Error: Failed to set pnpm global version"
   exit 1;
 }
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf reshim pnpm" > "$HOME/asdf-pnpm-reshim.log" 2>&1 || {
-  echo "Error: Failed to reshim pnpm. See $HOME/asdf-pnpm-reshim.log"
-  cat "$HOME/asdf-pnpm-reshim.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; asdf reshim pnpm" || {
+  echo "Error: Failed to reshim pnpm"
   exit 1;
 }
 
 # pnpm setup
 echo "Running pnpm setup..."
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm setup" > "$HOME/pnpm-setup.log" 2>&1 || {
-  echo "Error: pnpm setup failed. See $HOME/pnpm-setup.log"
-  cat "$HOME/pnpm-setup.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm setup" || {
+  echo "Error: pnpm setup failed"
   exit 1;
 }
 
 # Verify pnpm
 echo "pnpm version:"
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm --version" > "$HOME/pnpm-verify.log" 2>&1 || {
-  echo "Error: pnpm verification failed. See $HOME/pnpm-verify.log"
-  cat "$HOME/pnpm-verify.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm --version" || {
+  echo "Error: pnpm verification failed"
   exit 1;
 }
 
 # Clone Roo Benchmarks repository
 echo "Cloning Roo Benchmarks repository..."
 if [ ! -d "$HOME/Roo-Code" ]; then
-  bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; git clone https://github.com/StevenTCramer/Roo-Code.git $HOME/Roo-Code" > "$HOME/git-clone.log" 2>&1 || {
-    echo "Error: Failed to clone Roo-Code. See $HOME/git-clone.log"
-    cat "$HOME/git-clone.log"
+  bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; git clone https://github.com/StevenTCramer/Roo-Code.git $HOME/Roo-Code" || {
+    echo "Error: Failed to clone Roo-Code"
     exit 1;
   }
 fi
@@ -190,17 +169,15 @@ fi
 # Install dependencies
 echo "Installing project dependencies with pnpm..."
 cd "$HOME/Roo-Code/evals/scripts"
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm install" > "$HOME/pnpm-install.log" 2>&1 || {
-  echo "Error: pnpm install failed. See $HOME/pnpm-install.log"
-  cat "$HOME/pnpm-install.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm install" || {
+  echo "Error: pnpm install failed"
   exit 1;
 }
 
 # Run the benchmarks setup
 echo "Running benchmarks setup..."
-bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm run setup" > "$HOME/pnpm-setup-run.log" 2>&1 || {
-  echo "Error: pnpm run setup failed. See $HOME/pnpm-setup-run.log"
-  cat "$HOME/pnpm-setup-run.log"
+bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; pnpm run setup" || {
+  echo "Error: pnpm run setup failed"
   exit 1;
 }
 
