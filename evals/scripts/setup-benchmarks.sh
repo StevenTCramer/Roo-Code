@@ -60,15 +60,17 @@ if [ ! -f "$HOME/.first_login_done" ]; then
   curl -fsSL "$FIRST_LOGIN_URL" -o "$HOME/first_login.sh" > "$HOME/first_login_curl.log" 2>&1 || {
     echo "Error: Failed to download first_login.sh. See $HOME/first_login_curl.log"
     cat "$HOME/first_login_curl.log"
-    exit 1
+    echo "Continuing login session. Please check logs and run 'bash $HOME/first_login.sh' manually if needed."
   }
-  chmod 755 "$HOME/first_login.sh"
-  echo "Running first login setup..."
-  bash "$HOME/first_login.sh" || {
-    echo "Error: First login setup failed. Check $HOME/first_login.log"
-    exit 1
-  }
-  touch "$HOME/.first_login_done"
+  if [ -f "$HOME/first_login.sh" ]; then
+    chmod 755 "$HOME/first_login.sh"
+    echo "Running first login setup..."
+    bash "$HOME/first_login.sh" || {
+      echo "Error: First login setup failed. See $HOME/first_login.log"
+      echo "Continuing login session. Please check logs and run 'bash $HOME/first_login.sh' manually if needed."
+    }
+    touch "$HOME/.first_login_done"
+  fi
 fi
 EOF
 fi
