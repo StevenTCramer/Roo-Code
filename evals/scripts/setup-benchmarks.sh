@@ -49,19 +49,6 @@ apt update && apt upgrade -y
 echo "Installing dependencies..."
 apt install -y curl git build-essential libssl-dev zlib1g-dev xvfb gnupg2 apt-transport-https micro wget
 
-# Install Visual Studio Code (VS Code)
-echo "Installing Visual Studio Code..."
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
-echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
-rm packages.microsoft.gpg
-apt update
-apt install -y code
-
-# Verify VS Code
-echo "VS Code version:"
-code --version | head -n 1
-
 # Create first_login.sh for roocodeuser
 echo "Creating first_login.sh for roocodeuser..."
 cat > "$ROOCODEUSER_HOME/first_login.sh" << 'EOF'
@@ -75,6 +62,27 @@ set -euo pipefail
 exec > >(tee -a "$HOME/first_login.log") 2>&1
 
 echo "Starting first login setup for roocodeuser..."
+
+# Install Visual Studio Code (VS Code)
+echo "Installing Visual Studio Code..."
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > "$HOME/packages.microsoft.gpg"
+sudo install -o root -g root -m 644 "$HOME/packages.microsoft.gpg" /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+rm "$HOME/packages.microsoft.gpg"
+sudo apt update
+sudo apt install -y code > "$HOME/vscode-install.log" 2>&1 || {
+  echo "Error: VS Code installation failed. See $HOME/vscode-install.log"
+  cat "$HOME/vscode-install.log"
+  exit 1
+}
+
+# Verify VS Code
+echo "VS Code version:"
+code --version | head -n 1 > "$HOME/vscode-verify.log" 2>&1 || {
+  echo "Error: VS Code verification failed. See $HOME/vscode-verify.log"
+  cat "$HOME/vscode-verify.log"
+  exit 1
+}
 
 # Install asdf v0.16.7
 echo "Setting up asdf v0.16.7..."
