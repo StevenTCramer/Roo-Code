@@ -4,6 +4,27 @@
 
 set -euo pipefail
 
+# --- GUI and Browser Setup (migrated from PowerShell) ---
+
+echo "Installing XFCE desktop environment, XRDP, and curl..."
+sudo apt-get update
+sudo apt-get install -y xfce4 xfce4-goodies xrdp curl
+
+echo "Enabling XRDP service..."
+sudo systemctl enable xrdp
+
+echo "Configuring XFCE session for user: $USER"
+echo xfce4-session > /home/$USER/.xsession
+sudo chown $USER:$USER /home/$USER/.xsession
+
+echo "Installing Brave browser..."
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+sudo apt-get update
+sudo apt-get install -y brave-browser
+
+# --- End GUI and Browser Setup ---
+
 # Update the System
 echo "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
