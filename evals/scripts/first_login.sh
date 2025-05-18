@@ -12,10 +12,17 @@ exec > >(tee -a "$HOME/first_login.log") 2>&1
 
 echo "Starting first login setup for roocodeuser..."
 
-# Set PATH early
+# Log initial PATH
+echo "Initial PATH: $PATH" > "$HOME/env-debug.log"
+
+# Test PATH modification
+export PATH="/tmp:$PATH"
+echo "Test PATH: $PATH" > "$HOME/env-test-debug.log"
+
+# Set PATH for script
 export PATH="/usr/bin:$HOME/bin:$HOME/.asdf/shims:$PATH"
 hash -r
-echo "Initial PATH: $PATH" > "$HOME/env-debug.log"
+echo "Script PATH: $PATH" >> "$HOME/env-debug.log"
 
 # Install Visual Studio Code (VS Code)
 echo "Installing Visual Studio Code..."
