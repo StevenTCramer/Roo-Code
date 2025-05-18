@@ -76,8 +76,8 @@ ls -l "$HOME/bin/asdf" || {
 # Verify asdf executable exists
 if [ ! -x "$HOME/bin/asdf" ]; then
   echo "Error: asdf executable not found at $HOME/bin/asdf"
-  exit 1;
-}
+  exit 1
+fi
 
 # Set up environment variables for asdf
 echo "Configuring asdf environment..."
