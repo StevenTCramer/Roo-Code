@@ -3,6 +3,7 @@
 # Automated setup for Roo Benchmarks on Ubuntu 24 Server
 
 set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
 
 # --- GUI and Browser Setup (migrated from PowerShell) ---
 
@@ -12,10 +13,29 @@ sudo apt-get install -y xfce4 xfce4-goodies xrdp curl
 
 echo "Enabling XRDP service..."
 sudo systemctl enable xrdp
+sudo systemctl start xrdp
+if systemctl is-active --quiet xrdp; then
+  echo "XRDP service is running"
+else
+  echo "Error: XRDP service failed to start"
+  exit 1
+fi
 
 echo "Configuring XFCE session for user: $USER"
-echo xfce4-session > /home/$USER/.xsession
-sudo chown $USER:$USER /home/$USER/.xsession
+USER_HOME=$(getent passwd "$USER" | cut -d: -f6)
+echo xfce4-session > "$USER_HOME/.xsession"
+sudo chown "$USER:$USER" "$USER_HOME/.xsession"
+sudo chmod 644 "$USER_HOME/.xsession"
+
+echo "Configuring XFCE session for roocodeuser"
+ROOCODEUSER_HOME=$(getent passwd "roocodeuser" | cut -d: -f6)
+if [ -n "$ROOCODEUSER_HOME" ]; then
+  echo xfce4-session > "$ROOCODEUSER_HOME/.xsession"
+  sudo chown roocodeuser:roocodeuser "$ROOCODEUSER_HOME/.xsession"
+  sudo chmod 644 "$ROOCODEUSER_HOME/.xsession"
+else
+  echo "Warning: roocodeuser not found, skipping .xsession setup"
+fi
 
 echo "Installing Brave browser..."
 sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
@@ -57,7 +77,7 @@ export PATH="$ASDF_DATA_DIR/shims:$HOME/bin:$PATH"
 
 # Verify asdf
 echo "Verifying asdf installation..."
-asdf --version
+"$HOME/bin/asdf" --version
 
 # Install Node.js 20.18.1
 echo "Installing Node.js 20.18.1 via asdf..."
