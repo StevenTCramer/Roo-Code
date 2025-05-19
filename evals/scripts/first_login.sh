@@ -159,8 +159,10 @@ bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r;
 
 # Clone Roo Benchmarks repository
 echo "Cloning Roo Benchmarks repository..."
+GITHUB_USER="${GITHUB_USER:-RooVetGit}"
+GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
 if [ ! -d "$HOME/Roo-Code" ]; then
-  bash -l -c "source $HOME/.bashrc; export PATH=/usr/bin:$HOME/bin:$PATH; hash -r; git clone https://github.com/StevenTCramer/Roo-Code.git $HOME/Roo-Code" || {
+  bash -l -c "source \$HOME/.bashrc; export PATH=/usr/bin:\$HOME/bin:\$PATH; hash -r; git clone --branch \"\$GITHUB_BRANCH\" https://github.com/\$GITHUB_USER/Roo-Code.git \$HOME/Roo-Code" || {
     echo "Error: Failed to clone Roo-Code"
     exit 1;
   }

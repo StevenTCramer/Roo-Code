@@ -51,25 +51,36 @@ apt install -y curl git build-essential libssl-dev zlib1g-dev xvfb gnupg2 apt-tr
 
 # Configure .bashrc to fetch and run first_login.sh on first login
 echo "Configuring .bashrc to fetch first_login.sh on first login..."
+
+# Export GITHUB_USER and GITHUB_BRANCH in .bashrc for persistent availability
+if ! grep -q 'export GITHUB_USER=' "$ROOCODEUSER_HOME/.bashrc"; then
+  echo "export GITHUB_USER=\"\${GITHUB_USER:-RooVetGit}\"" >> "$ROOCODEUSER_HOME/.bashrc"
+fi
+if ! grep -q 'export GITHUB_BRANCH=' "$ROOCODEUSER_HOME/.bashrc"; then
+  echo "export GITHUB_BRANCH=\"\${GITHUB_BRANCH:-main}\"" >> "$ROOCODEUSER_HOME/.bashrc"
+fi
+
 if ! grep -q 'first_login.sh' "$ROOCODEUSER_HOME/.bashrc"; then
-  cat >> "$ROOCODEUSER_HOME/.bashrc" << 'EOF'
+  GITHUB_USER="${GITHUB_USER:-RooVetGit}"
+  GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
+  cat >> "$ROOCODEUSER_HOME/.bashrc" <<EOF
 # Fetch and run first_login.sh on first login
-if [ ! -f "$HOME/.first_login_done" ]; then
+if [ ! -f "\$HOME/.first_login_done" ]; then
   echo "Downloading first login setup..."
-  FIRST_LOGIN_URL="https://raw.githubusercontent.com/StevenTCramer/Roo-Code/refs/heads/Cramer/2025-05-13/windows-evals/evals/scripts/first_login.sh"
-  curl -fsSL "$FIRST_LOGIN_URL" -o "$HOME/first_login.sh" > "$HOME/first_login_curl.log" 2>&1 || {
-    echo "Error: Failed to download first_login.sh. See $HOME/first_login_curl.log"
-    cat "$HOME/first_login_curl.log"
-    echo "Continuing login session. Please check logs and run 'bash $HOME/first_login.sh' manually if needed."
+  FIRST_LOGIN_URL="https://raw.githubusercontent.com/\$GITHUB_USER/Roo-Code/refs/heads/\$GITHUB_BRANCH/evals/scripts/first_login.sh"
+  curl -fsSL "\$FIRST_LOGIN_URL" -o "\$HOME/first_login.sh" > "\$HOME/first_login_curl.log" 2>&1 || {
+    echo "Error: Failed to download first_login.sh. See \$HOME/first_login_curl.log"
+    cat "\$HOME/first_login_curl.log"
+    echo "Continuing login session. Please check logs and run 'bash \$HOME/first_login.sh' manually if needed."
   }
-  if [ -f "$HOME/first_login.sh" ]; then
-    chmod 755 "$HOME/first_login.sh"
+  if [ -f "\$HOME/first_login.sh" ]; then
+    chmod 755 "\$HOME/first_login.sh"
     echo "Running first login setup..."
-    bash "$HOME/first_login.sh" || {
-      echo "Error: First login setup failed. See $HOME/first_login.log"
-      echo "Continuing login session. Please check logs and run 'bash $HOME/first_login.sh' manually if needed."
+    bash "\$HOME/first_login.sh" || {
+      echo "Error: First login setup failed. See \$HOME/first_login.log"
+      echo "Continuing login session. Please check logs and run 'bash \$HOME/first_login.sh' manually if needed."
     }
-    touch "$HOME/.first_login_done"
+    touch "\$HOME/.first_login_done"
   fi
 fi
 EOF

@@ -11,7 +11,9 @@ $vnetName = "RooCodeVNet"
 $subnetName = "RooCodeSubnet"
 $nsgName = "RooCodeNSG"
 $nicName = "RooCodeNIC"
-$scriptUrl = "https://raw.githubusercontent.com/StevenTCramer/Roo-Code/refs/heads/Cramer/2025-05-13/windows-evals/evals/scripts/setup-benchmarks.sh"  # Updated script URL
+$githubUser = "StevenTCramer"
+$githubBranch = "Cramer/2025-05-13/windows-evals"
+$scriptUrl = "https://raw.githubusercontent.com/$githubUser/Roo-Code/refs/heads/$githubBranch/evals/scripts/setup-benchmarks.sh"  # Updated script URL
 
 # Create a resource group
 az group create --name $resourceGroup --location $location
@@ -84,7 +86,7 @@ az vm extension set `
   --vm-name $vmName `
   --name CustomScript `
   --publisher Microsoft.Azure.Extensions `
-  --settings "{'commandToExecute': 'curl -fsSL $scriptUrl -o /tmp/setup-benchmarks.sh && chmod +x /tmp/setup-benchmarks.sh && /tmp/setup-benchmarks.sh'}"
+  --settings "{'commandToExecute': 'export GITHUB_USER=$githubUser GITHUB_BRANCH=$githubBranch; curl -fsSL $scriptUrl -o /tmp/setup-benchmarks.sh && chmod +x /tmp/setup-benchmarks.sh && /tmp/setup-benchmarks.sh'}"
 
 # Open the VM ports for SSH and RDP
 az vm open-port `
