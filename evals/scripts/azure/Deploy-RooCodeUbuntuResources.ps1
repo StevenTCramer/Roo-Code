@@ -1,21 +1,11 @@
 # Requires Get-PublicIP function
-. "$PSScriptRoot/Get-PublicIP.ps1"
+. "$PSScriptRoot/RooCodeUbuntuVars.ps1"
 
 # Variables
-$resourceGroup = "RooCodeUbuntuRG"
-$location = "centralindia"
-$vmName = "RooCodeVM"
-$vmSize = "Standard_D4s_v3"
 $adminUser = "roocodeuser"
 $adminPassword = Get-Secret -Name VmAdminPassword -AsPlainText  # Retrieve the password securely
 $image = "Canonical:Ubuntu-24_04-lts:Ubuntu-pro:latest"  # Ubuntu 24.04 LTS Pro image
-$publicIpName = Get-PublicIP  # Using your custom command to get the public IP name
-$vnetName = "RooCodeVNet"
 $subnetName = "RooCodeSubnet"
-$nsgName = "RooCodeNSG"
-$nicName = "RooCodeNIC"
-$githubUser = "StevenTCramer"
-$githubBranch = "Cramer/2025-05-13/windows-evals"
 $scriptUrl = "https://raw.githubusercontent.com/$githubUser/Roo-Code/refs/heads/$githubBranch/evals/scripts/setup-benchmarks.sh"  # Updated script URL
 
 # Create a resource group

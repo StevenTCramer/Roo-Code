@@ -1,10 +1,5 @@
 # Variables (matching the deployment script)
-$resourceGroup = "RooCodeUbuntuRG"
-$vmName = "RooCodeVM"
-$publicIpName = Get-PublicIP  # Using your custom command to get the public IP name
-$vnetName = "RooCodeVNet"
-$nsgName = "RooCodeNSG"
-$nicName = "RooCodeNIC"
+. "$PSScriptRoot/RooCodeUbuntuVars.ps1"
 
 # Confirmation prompt to avoid accidental deletion
 $confirmation = Read-Host "Are you sure you want to delete all resources in Resource Group '$resourceGroup'? (Type 'yes' to confirm)"
