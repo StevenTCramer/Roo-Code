@@ -12,10 +12,6 @@ echo "Starting first login setup for roocodeuser..."
 # Echo initial PATH
 echo "Initial PATH: $PATH"
 
-# Test PATH modification
-export PATH="/tmp:$PATH"
-echo "Test PATH: $PATH"
-
 # Set PATH for script
 export PATH="/usr/bin:$HOME/bin:$HOME/.asdf/shims:$PATH"
 hash -r
