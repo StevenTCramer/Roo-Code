@@ -1,3 +1,6 @@
+# Requires Get-PublicIP function
+. "$PSScriptRoot/Get-PublicIP.ps1"
+
 # Variables
 $resourceGroup = "RooCodeUbuntuRG"
 $location = "centralindia"
