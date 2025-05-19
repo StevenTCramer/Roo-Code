@@ -1,5 +1,5 @@
 # Variables
-$resourceGroup = "RooCodeBenchmarkRG"
+$resourceGroup = "RooCodeUbuntuRG"
 $location = "centralindia"
 $vmName = "RooCodeVM"
 $vmSize = "Standard_D4s_v3"

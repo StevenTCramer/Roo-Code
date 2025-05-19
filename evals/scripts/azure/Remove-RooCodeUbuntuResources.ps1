@@ -1,5 +1,5 @@
 # Variables (matching the deployment script)
-$resourceGroup = "RooCodeBenchmarkRG"
+$resourceGroup = "RooCodeUbuntuRG"
 $vmName = "RooCodeVM"
 $publicIpName = Get-PublicIP  # Using your custom command to get the public IP name
 $vnetName = "RooCodeVNet"
