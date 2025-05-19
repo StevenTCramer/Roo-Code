@@ -239,10 +239,7 @@ const runExercise = async ({ run, task, server }: { run: Run; task: Task; server
 
 	logToConsoleAndFile(`${Date.now()} [cli#runExercise] Opening new VS Code window at ${workspacePath}`)
 
-	const isLinux = os.platform() === "linux"
-	const codeCmd = isLinux
-		? `xvfb-run -a code --disable-workspace-trust -n ${workspacePath}`
-		: `code --disable-workspace-trust -n ${workspacePath}`
+	const codeCmd = `code --disable-workspace-trust --use-inmemory-secretstorage -n ${workspacePath}`
 
 	logToConsoleAndFile(`${Date.now()} [cli#runExercise] VSCode launch command: ${codeCmd}`)
 
