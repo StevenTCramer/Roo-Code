@@ -49,7 +49,7 @@ apt update && apt upgrade -y
 echo "Installing dependencies..."
 apt install -y curl git build-essential libssl-dev zlib1g-dev xvfb gnupg2 apt-transport-https micro wget
 # Additional packages required for asdf to build Python 3.13.2
-apt install -y libbz2-dev libncurses5-dev libffi-dev libreadline-dev libsqlite3-dev liblzma-dev
+apt install -y libbz2-dev libncurses5-dev libffi-dev libreadline-dev libsqlite3-dev liblzma-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev llvm
 
 # Configure .bashrc to fetch and run first_login.sh on first login
 echo "Configuring .bashrc to fetch first_login.sh on first login..."
