@@ -54,10 +54,10 @@ echo "Configuring .bashrc to fetch first_login.sh on first login..."
 
 # Export GITHUB_USER and GITHUB_BRANCH in .bashrc for persistent availability
 if ! grep -q 'export GITHUB_USER=' "$ROOCODEUSER_HOME/.bashrc"; then
-  echo "export GITHUB_USER=\"\${GITHUB_USER:-RooVetGit}\"" >> "$ROOCODEUSER_HOME/.bashrc"
+  echo "export GITHUB_USER=\"$GITHUB_USER\"" >> "$ROOCODEUSER_HOME/.bashrc"
 fi
 if ! grep -q 'export GITHUB_BRANCH=' "$ROOCODEUSER_HOME/.bashrc"; then
-  echo "export GITHUB_BRANCH=\"\${GITHUB_BRANCH:-main}\"" >> "$ROOCODEUSER_HOME/.bashrc"
+  echo "export GITHUB_BRANCH=\"$GITHUB_BRANCH\"" >> "$ROOCODEUSER_HOME/.bashrc"
 fi
 
 if ! grep -q 'first_login.sh' "$ROOCODEUSER_HOME/.bashrc"; then
