@@ -734,15 +734,15 @@ async function setupDatabase(): Promise<void> {
 async function startWebApp(): Promise<void> {
 	const { start } = await inquirer.prompt([{ type: "confirm", name: "start", message: "Start the evals web app?" }])
 	if (start) {
-		logInfo("Starting evals web app...")
-		console.log("About to run command: pnpm web")
-		console.log("process.cwd():", process.cwd())
-		console.log("cwd option for spawn:", evalsRoot)
-		const result = spawn.sync("pnpm", ["web"], { stdio: "inherit", cwd: evalsRoot })
-		if (result.status === 0) {
-			logSuccess("Evals web app started")
+		const osType = getOS()
+		if (osType === "Linux") {
+			logInfo(
+				"You are on Linux. Please log in to this machine via RDP, open a terminal in the RDP session (to ensure VSCode has an X window system), navigate to /Roo-Code/evals, and run:\n    pnpm web",
+			)
+		} else if (osType === "Windows" || osType === "macOS") {
+			logInfo("To start the evals web app, open a terminal, navigate to /Roo-Code/evals, and run:\n    pnpm web")
 		} else {
-			logError("Failed to start evals web app. See above for details.")
+			logInfo("To start the evals web app, open a terminal, navigate to /Roo-Code/evals, and run:\n    pnpm web")
 		}
 	}
 }
