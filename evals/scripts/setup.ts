@@ -65,6 +65,32 @@ const logSuccess = (message: string) => console.log(chalk.green(`✅ ${message}`
 const logWarning = (message: string) => console.log(chalk.yellow(`⚠️ ${message}`))
 const logError = (message: string) => console.error(chalk.red(`🚨 ${message}`))
 
+/**
+ * Persist a key-value pair to a .env file.
+ * If the key exists, its value is updated; otherwise, it is appended.
+ */
+function persistEnvVar(envPath: string, key: string, value: string): void {
+	let envContent = ""
+	try {
+		envContent = fs.readFileSync(envPath, "utf8")
+	} catch (err) {
+		envContent = ""
+	}
+	const envVar = `${key}=${value}`
+	if (envContent.includes(`${key}=`)) {
+		// Replace existing value
+		envContent = envContent.replace(new RegExp(`^${key}=.*$`, "m"), envVar)
+	} else {
+		// Ensure newline if needed
+		if (envContent.length > 0 && !envContent.endsWith("\n")) {
+			envContent += "\n"
+		}
+		envContent += envVar + "\n"
+	}
+	fs.writeFileSync(envPath, envContent, "utf8")
+	logSuccess(`Persisted ${key} to .env: ${value}`)
+}
+
 function installPowerShell(osType: string): void {
 	if (osType === "Windows") return // PowerShell pre-installed on Windows
 	if (spawn.sync("pwsh", ["--version"]).status !== 0) {
@@ -715,6 +741,10 @@ async function setupDatabase(): Promise<void> {
 	// set the env BENCHMARKS_DB_PATH to the dataDir prefixed with the protocol `file:`
 	const dbPath = `file:${dataDir}/benchmarks.db`
 	process.env.BENCHMARKS_DB_PATH = dbPath
+
+	// Persist BENCHMARKS_DB_PATH to .env file in evalsRoot
+	const envPath = path.join(evalsRoot, ".env")
+	persistEnvVar(envPath, "BENCHMARKS_DB_PATH", dbPath)
 
 	const dbPush = spawn.sync("pnpm", ["--filter", "@evals/db", "db:push"], { stdio: "inherit" })
 	if (dbPush.status !== 0) {
