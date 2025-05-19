@@ -14,7 +14,7 @@ $githubBranch = "Cramer/2025-05-13/windows-evals"
 
 # Shared variables for RooCode Ubuntu Azure resources that you should not need to change
 $vmName = "RooCodeVM"
-$publicIpName = Get-PublicIP  # Using your custom command to get the public IP name
+$publicIpName = "RooCodePublicIp"
 $vnetName = "RooCodeVNet"
 $nsgName = "RooCodeNSG"
 $nicName = "RooCodeNIC"
