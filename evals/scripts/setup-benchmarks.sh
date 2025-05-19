@@ -61,6 +61,9 @@ fi
 if ! grep -q 'export GITHUB_BRANCH=' "$ROOCODEUSER_HOME/.bashrc"; then
   echo "export GITHUB_BRANCH=\"$GITHUB_BRANCH\"" >> "$ROOCODEUSER_HOME/.bashrc"
 fi
+if ! grep -q 'export VSCODE_USE_INMEMORY_SECRETSTORAGE=' "$ROOCODEUSER_HOME/.bashrc"; then
+  echo "export VSCODE_USE_INMEMORY_SECRETSTORAGE=\"true\"" >> "$ROOCODEUSER_HOME/.bashrc"
+fi
 
 if ! grep -q 'first_login.sh' "$ROOCODEUSER_HOME/.bashrc"; then
   GITHUB_USER="${GITHUB_USER:-RooVetGit}"
